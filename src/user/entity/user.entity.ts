@@ -1,7 +1,7 @@
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { IsEmail, IsInt, IsString, Length } from 'class-validator';
 import { CoreEntity } from 'src/common/entity/common.entity';
-import { Column, Entity } from 'typeorm';
+import { BeforeInsert, Column, Entity } from 'typeorm';
 
 @InputType({ isAbstract: true })
 @ObjectType()
@@ -27,4 +27,11 @@ export class User extends CoreEntity {
   @IsString()
   @Length(8)
   password: string;
+
+  @BeforeInsert()
+  writeEmail() {
+    if (this.studentId) {
+      this.studentEmail = `${this.studentId}@jnu.ac.kr`;
+    }
+  }
 }
