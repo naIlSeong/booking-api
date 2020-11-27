@@ -77,4 +77,8 @@ export class UserService {
       };
     }
   }
+
+  async findById(userId: number): Promise<User> {
+    return this.userRepo.findOne({ id: userId });
+  }
 }
