@@ -1,17 +1,20 @@
-import { ConfigService } from '@nestjs/config';
+import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { AuthUser } from 'src/auth/auth.decorator';
+import { AuthGuard } from 'src/auth/auth.guard';
 import { CreateUserInput, CreateUserOutput } from './dto/create-user.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
+import { User } from './entity/user.entity';
 import { UserService } from './user.service';
 
 @Resolver()
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
-  // ✅ Delete Later
-  @Query((returns) => String)
-  ping() {
-    return 'pong';
+  @UseGuards(AuthGuard)
+  @Query((returns) => User)
+  me(@AuthUser() user: User) {
+    return user;
   }
 
   @Mutation((returns) => CreateUserOutput)
