@@ -1,12 +1,13 @@
-# Booking API
+# Booking API 🛎
 
 Sports facility reservation service
 
 ---
 
-### TODO
+### TODO 📝
 
-- DB Configuration
+- [x] DB Configuration
+- [x] User Authorization
+- [x] Guard
 - User CRUD
-- User Authorization
 - Booking CRUD
