@@ -3,6 +3,7 @@ import { AuthUser } from 'src/auth/auth.decorator';
 import { Role } from 'src/auth/role.decorator';
 import { CreateUserInput, CreateUserOutput } from './dto/create-user.dto';
 import { DeleteUserInput, DeleteUserOutput } from './dto/delete-user.dto';
+import { EditUserInput, EditUserOutput } from './dto/edit-user.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
 import { User } from './entity/user.entity';
 import { UserService } from './user.service';
@@ -35,5 +36,14 @@ export class UserResolver {
     @Args('input') deleteUserInput: DeleteUserInput,
   ): Promise<DeleteUserOutput> {
     return this.userService.deleteUser(deleteUserInput);
+  }
+
+  @Mutation((returns) => EditUserOutput)
+  @Role(['User'])
+  editUser(
+    @Args('input') editUserInput: EditUserInput,
+    @AuthUser() user: User,
+  ): Promise<EditUserOutput> {
+    return this.userService.editUser(editUserInput, user);
   }
 }

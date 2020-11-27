@@ -6,6 +6,7 @@ import { LoginInput, LoginOutput } from './dto/login.dto';
 import { User } from './entity/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 import { DeleteUserInput, DeleteUserOutput } from './dto/delete-user.dto';
+import { EditUserInput, EditUserOutput } from './dto/edit-user.dto';
 
 @Injectable()
 export class UserService {
@@ -93,6 +94,44 @@ export class UserService {
         };
       }
       await this.userRepo.delete({ id });
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async editUser(
+    { username, password }: EditUserInput,
+    user: User,
+  ): Promise<EditUserOutput> {
+    try {
+      if (username) {
+        if (username === user.username) {
+          return {
+            ok: false,
+            error: 'Same Username',
+          };
+        }
+        user.username = username;
+      }
+
+      if (password) {
+        const isMatch = await user.checkPassword(password);
+        if (isMatch) {
+          return {
+            ok: false,
+            error: 'Same Password',
+          };
+        }
+        user.password = password;
+      }
+
+      await this.userRepo.save(user);
       return {
         ok: true,
       };
