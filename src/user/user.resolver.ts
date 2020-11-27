@@ -1,7 +1,6 @@
-import { UseGuards } from '@nestjs/common';
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AuthUser } from 'src/auth/auth.decorator';
-import { AuthGuard } from 'src/auth/auth.guard';
+import { Role } from 'src/auth/role.decorator';
 import { CreateUserInput, CreateUserOutput } from './dto/create-user.dto';
 import { DeleteUserInput, DeleteUserOutput } from './dto/delete-user.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
@@ -12,8 +11,8 @@ import { UserService } from './user.service';
 export class UserResolver {
   constructor(private readonly userService: UserService) {}
 
-  @UseGuards(AuthGuard)
   @Query((returns) => User)
+  @Role(['Any'])
   me(@AuthUser() user: User) {
     return user;
   }
@@ -30,8 +29,8 @@ export class UserResolver {
     return this.userService.login(loginInput);
   }
 
-  //Only admin
   @Mutation((returns) => DeleteUserOutput)
+  @Role(['Admin'])
   deleteUser(
     @Args('input') deleteUserInput: DeleteUserInput,
   ): Promise<DeleteUserOutput> {

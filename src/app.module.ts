@@ -6,6 +6,7 @@ import { UserModule } from './user/user.module';
 import * as Joi from '@hapi/joi';
 import { User } from './user/entity/user.entity';
 import { JwtModule } from './jwt/jwt.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { JwtModule } from './jwt/jwt.module';
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,
     }),
+    AuthModule,
     UserModule,
   ],
 })
