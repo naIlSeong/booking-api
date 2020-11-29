@@ -10,7 +10,7 @@ import {
   RelationId,
 } from 'typeorm';
 
-@InputType({ isAbstract: true })
+@InputType('BookingInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
 export class Booking extends CoreEntity {
@@ -20,7 +20,7 @@ export class Booking extends CoreEntity {
 
   @Field((type) => String, { nullable: true })
   @Column({ nullable: true })
-  name?: string;
+  teamName?: string;
 
   @Field((type) => User)
   @ManyToOne((type) => User, (user) => user.bookings)
@@ -29,12 +29,16 @@ export class Booking extends CoreEntity {
   @RelationId((booking: Booking) => booking.representative)
   representativeId: number;
 
-  @Field((type) => [User])
-  @ManyToMany((type) => User)
+  @Field((type) => [User], { nullable: true })
+  @ManyToMany((type) => User, { nullable: true })
   @JoinTable()
-  participants: User[];
+  participants?: User[];
 
   @Field((type) => Date)
   @Column()
-  bookingAt: Date;
+  startAt: Date;
+
+  @Field((type) => Date)
+  @Column()
+  endAt: Date;
 }
