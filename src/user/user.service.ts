@@ -7,6 +7,7 @@ import { User } from './entity/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 import { DeleteUserInput, DeleteUserOutput } from './dto/delete-user.dto';
 import { EditUserInput, EditUserOutput } from './dto/edit-user.dto';
+import { GetUserInput, GetUserOutput } from './dto/get-user.dto';
 
 @Injectable()
 export class UserService {
@@ -134,6 +135,28 @@ export class UserService {
       await this.userRepo.save(user);
       return {
         ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async getUser({ userId }: GetUserInput): Promise<GetUserOutput> {
+    try {
+      const user = await this.userRepo.findOne({ id: userId });
+      if (!user) {
+        return {
+          ok: false,
+          error: 'User not found',
+        };
+      }
+
+      return {
+        ok: true,
+        user,
       };
     } catch (error) {
       return {
