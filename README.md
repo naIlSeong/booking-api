@@ -9,5 +9,6 @@ Sports facility reservation service
 - [x] DB Configuration
 - [x] User Authorization
 - [x] Guard
-- User CRUD
-- Booking CRUD
+- [x] User CRUD
+- [ ] Booking CRUD
+- [ ] Verify Student Email

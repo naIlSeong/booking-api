@@ -7,6 +7,8 @@ import * as Joi from '@hapi/joi';
 import { User } from './user/entity/user.entity';
 import { JwtModule } from './jwt/jwt.module';
 import { AuthModule } from './auth/auth.module';
+import { BookingModule } from './booking/booking.module';
+import { Booking } from './booking/entity/booking.entity';
 
 @Module({
   imports: [
@@ -34,7 +36,7 @@ import { AuthModule } from './auth/auth.module';
       database: process.env.DB_DATABASE,
       synchronize: true,
       logging: true,
-      entities: [User],
+      entities: [User, Booking],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
@@ -45,6 +47,7 @@ import { AuthModule } from './auth/auth.module';
     }),
     AuthModule,
     UserModule,
+    BookingModule,
   ],
 })
 export class AppModule {}
