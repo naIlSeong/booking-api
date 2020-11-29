@@ -23,7 +23,7 @@ export class Booking extends CoreEntity {
   teamName?: string;
 
   @Field((type) => User)
-  @ManyToOne((type) => User, (user) => user.bookings)
+  @ManyToOne((type) => User, (user) => user.bookings, { eager: true })
   representative: User;
 
   @RelationId((booking: Booking) => booking.representative)

@@ -1,8 +1,12 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AuthUser } from 'src/auth/auth.decorator';
 import { Role } from 'src/auth/role.decorator';
 import { User } from 'src/user/entity/user.entity';
 import { BookingService } from './booking.service';
+import {
+  BookingDetailInput,
+  BookingDetailOutput,
+} from './dto/booking-detail.dto';
 import {
   CreateBookingInput,
   CreateBookingOutput,
@@ -18,10 +22,18 @@ export class BookingResolver {
   createBooking(
     @Args('input') createBookingInput: CreateBookingInput,
     @AuthUser() representative: User,
-  ) {
+  ): Promise<CreateBookingOutput> {
     return this.bookingService.createBooking(
       createBookingInput,
       representative,
     );
+  }
+
+  @Query((returns) => BookingDetailOutput)
+  @Role(['User'])
+  bookingDetail(
+    @Args('input') bookingDetailInput: BookingDetailInput,
+  ): Promise<BookingDetailOutput> {
+    return this.bookingService.bookingDetail(bookingDetailInput);
   }
 }

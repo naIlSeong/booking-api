@@ -1,4 +1,4 @@
-import { Field, InputType, Int, ObjectType, PickType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType, PickType } from '@nestjs/graphql';
 import { CoreOutput } from 'src/common/dto/common.dto';
 import { Booking } from '../entity/booking.entity';
 
@@ -10,9 +10,6 @@ export class CreateBookingInput extends PickType(Booking, [
 ]) {
   @Field((type) => String, { nullable: true })
   teamName?: string;
-
-  @Field((type) => Int)
-  userId: number;
 }
 
 @ObjectType()

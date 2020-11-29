@@ -1,7 +1,11 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
 import { LessThan, MoreThan, Repository } from 'typeorm';
+import {
+  BookingDetailInput,
+  BookingDetailOutput,
+} from './dto/booking-detail.dto';
 import {
   CreateBookingInput,
   CreateBookingOutput,
@@ -36,14 +40,42 @@ export class BookingService {
         };
       }
 
+      const participants = [];
+      participants.push(representative);
       await this.bookingRepo.save(
         this.bookingRepo.create({
           representative,
+          participants,
           ...createBookingInput,
         }),
       );
       return {
         ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async bookingDetail({
+    bookingId,
+  }: BookingDetailInput): Promise<BookingDetailOutput> {
+    try {
+      const booking = await this.bookingRepo.findOne(bookingId, {
+        relations: ['participants'],
+      });
+      if (!booking) {
+        return {
+          ok: false,
+          error: 'Booking not found',
+        };
+      }
+      return {
+        ok: true,
+        booking,
       };
     } catch (error) {
       return {
