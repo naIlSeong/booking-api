@@ -10,6 +10,10 @@ import {
   CreateBookingInput,
   CreateBookingOutput,
 } from './dto/create-booking.dto';
+import {
+  DeleteBookingInput,
+  DeleteBookingOutput,
+} from './dto/delete-booking.dto';
 import { GetBookingsOutput } from './dto/get-bookings.dto';
 import {
   RegisterParticipantInput,
@@ -162,6 +166,37 @@ export class BookingService {
       return {
         ok: false,
         error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async deleteBooking(
+    { bookingId }: DeleteBookingInput,
+    representative: User,
+  ): Promise<DeleteBookingOutput> {
+    try {
+      const booking = await this.bookingRepo.findOne({ id: bookingId });
+      if (!booking) {
+        return {
+          ok: false,
+          error: 'Booking not found',
+        };
+      }
+      if (booking.representativeId !== representative.id) {
+        return {
+          ok: false,
+          error: "You can't do this",
+        };
+      }
+      await this.bookingRepo.delete(bookingId);
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error,
       };
     }
   }

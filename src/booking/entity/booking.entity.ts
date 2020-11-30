@@ -35,7 +35,7 @@ export class Booking extends CoreEntity {
   participants?: User[];
 
   @RelationId((booking: Booking) => booking.participants)
-  participantsId: number[];
+  participantIds: number[];
 
   @Field((type) => Date)
   @Column()
