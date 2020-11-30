@@ -24,16 +24,20 @@ export class BookingService {
     representative: User,
   ): Promise<CreateBookingOutput> {
     try {
-      const exist1 = await this.bookingRepo.findOne({
+      const startEarly = await this.bookingRepo.findOne({
         place: createBookingInput.place,
+        startAt: LessThan(createBookingInput.startAt),
         endAt: MoreThan(createBookingInput.startAt),
       });
-      const exist2 = await this.bookingRepo.findOne({
+      const startInTheMiddle1 = await this.bookingRepo.findOne({
+        place: createBookingInput.place,
+        startAt: MoreThan(createBookingInput.startAt),
+      });
+      const startInTheMiddle2 = await this.bookingRepo.findOne({
         place: createBookingInput.place,
         startAt: LessThan(createBookingInput.endAt),
       });
-
-      if (exist1 && exist2) {
+      if (startEarly || (startInTheMiddle1 && startInTheMiddle2)) {
         return {
           ok: false,
           error: 'Already booking exist',
