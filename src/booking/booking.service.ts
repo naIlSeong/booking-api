@@ -11,6 +11,10 @@ import {
   CreateBookingOutput,
 } from './dto/create-booking.dto';
 import { GetBookingsOutput } from './dto/get-bookings.dto';
+import {
+  RegisterParticipantInput,
+  RegisterParticipantOutput,
+} from './dto/register-participant.dto';
 import { Booking } from './entity/booking.entity';
 
 @Injectable()
@@ -18,6 +22,8 @@ export class BookingService {
   constructor(
     @InjectRepository(Booking)
     private readonly bookingRepo: Repository<Booking>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
   ) {}
 
   async createBooking(
@@ -108,6 +114,49 @@ export class BookingService {
       return {
         ok: true,
         bookings,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async registerParticipant(
+    { participantId, bookingId }: RegisterParticipantInput,
+    representative: User,
+  ): Promise<RegisterParticipantOutput> {
+    try {
+      const booking = await this.bookingRepo.findOne(
+        {
+          id: bookingId,
+        },
+        { relations: ['participants'] },
+      );
+      if (!booking) {
+        return {
+          ok: false,
+          error: 'Booking not found',
+        };
+      }
+      if (booking.representativeId !== representative.id) {
+        return {
+          ok: false,
+          error: "You can't do this",
+        };
+      }
+      const participant = await this.userRepo.findOne({ id: participantId });
+      if (!participant) {
+        return {
+          ok: false,
+          error: 'User not found',
+        };
+      }
+      booking.participants.push(participant);
+      await this.bookingRepo.save(booking);
+      return {
+        ok: true,
       };
     } catch (error) {
       return {

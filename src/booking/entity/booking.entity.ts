@@ -34,6 +34,9 @@ export class Booking extends CoreEntity {
   @JoinTable()
   participants?: User[];
 
+  @RelationId((booking: Booking) => booking.participants)
+  participantsId: number[];
+
   @Field((type) => Date)
   @Column()
   startAt: Date;
