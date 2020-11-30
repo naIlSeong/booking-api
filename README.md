@@ -15,6 +15,8 @@ Place 🏟
 - [x] Guard
 - [x] User CRUD
 - [ ] Booking CRUD
+  - Edit Booking (Time, place)
+  - Add Participants
   - Create inUse (1h)
   - Extends use time (30m)
 - [ ] Verify Student Email
