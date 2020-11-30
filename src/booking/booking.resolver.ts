@@ -11,6 +11,7 @@ import {
   CreateBookingInput,
   CreateBookingOutput,
 } from './dto/create-booking.dto';
+import { GetBookingsOutput } from './dto/get-bookings.dto';
 import { Booking } from './entity/booking.entity';
 
 @Resolver((of) => Booking)
@@ -35,5 +36,11 @@ export class BookingResolver {
     @Args('input') bookingDetailInput: BookingDetailInput,
   ): Promise<BookingDetailOutput> {
     return this.bookingService.bookingDetail(bookingDetailInput);
+  }
+
+  @Query((returns) => GetBookingsOutput)
+  @Role(['User'])
+  getBookings(@AuthUser() user: User): Promise<GetBookingsOutput> {
+    return this.bookingService.getBookings(user);
   }
 }

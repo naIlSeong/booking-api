@@ -10,6 +10,7 @@ import {
   CreateBookingInput,
   CreateBookingOutput,
 } from './dto/create-booking.dto';
+import { GetBookingsOutput } from './dto/get-bookings.dto';
 import { Booking } from './entity/booking.entity';
 
 @Injectable()
@@ -44,22 +45,19 @@ export class BookingService {
         };
       }
 
-      const participants = [];
-      participants.push(representative);
-      await this.bookingRepo.save(
-        this.bookingRepo.create({
-          representative,
-          participants,
-          ...createBookingInput,
-        }),
-      );
+      const booking = this.bookingRepo.create({
+        representative,
+        ...createBookingInput,
+      });
+      booking.participants = [representative];
+      await this.bookingRepo.save(booking);
       return {
         ok: true,
       };
     } catch (error) {
       return {
         ok: false,
-        error: 'Unexpected Error',
+        error,
       };
     }
   }
@@ -80,6 +78,36 @@ export class BookingService {
       return {
         ok: true,
         booking,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async getBookings(user: User): Promise<GetBookingsOutput> {
+    try {
+      const bookings = await this.bookingRepo.find({
+        relations: ['participants'],
+        where: {
+          representative: user,
+        },
+        order: {
+          startAt: 'ASC',
+        },
+      });
+
+      if (!bookings) {
+        return {
+          ok: false,
+          error: 'Booking not found',
+        };
+      }
+      return {
+        ok: true,
+        bookings,
       };
     } catch (error) {
       return {
