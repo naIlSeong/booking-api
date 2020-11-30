@@ -51,12 +51,12 @@ export class BookingService {
         };
       }
 
-      const booking = this.bookingRepo.create({
-        representative,
-        ...createBookingInput,
-      });
-      booking.participants = [representative];
-      await this.bookingRepo.save(booking);
+      await this.bookingRepo.save(
+        this.bookingRepo.create({
+          representative,
+          ...createBookingInput,
+        }),
+      );
       return {
         ok: true,
       };
