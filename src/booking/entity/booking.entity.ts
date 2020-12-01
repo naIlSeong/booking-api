@@ -1,7 +1,10 @@
+import { InternalServerErrorException } from '@nestjs/common';
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { CoreEntity } from 'src/common/entity/common.entity';
 import { User } from 'src/user/entity/user.entity';
 import {
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   Entity,
   JoinTable,
@@ -45,4 +48,26 @@ export class Booking extends CoreEntity {
   @Field((type) => Date)
   @Column()
   endAt: Date;
+
+  @BeforeInsert()
+  @BeforeUpdate()
+  checkDate(): void {
+    try {
+      if (this.startAt && this.endAt) {
+        if (this.startAt >= this.endAt) {
+          throw Error();
+        }
+        if (
+          Date.parse(this.endAt.toString()) -
+            Date.parse(this.startAt.toString()) <
+          1800000
+        ) {
+          throw Error('Invalid Date');
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException();
+    }
+  }
 }
