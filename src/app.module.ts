@@ -11,6 +11,7 @@ import { BookingModule } from './booking/booking.module';
 import { Booking } from './booking/entity/booking.entity';
 import { Place } from './place/entity/place.entity';
 import { PlaceModule } from './place/place.module';
+import { PlaceLocation } from './place/entity/location.entity';
 
 @Module({
   imports: [
@@ -38,7 +39,7 @@ import { PlaceModule } from './place/place.module';
       database: process.env.DB_DATABASE,
       synchronize: true,
       logging: true,
-      entities: [User, Booking, Place],
+      entities: [User, Booking, Place, PlaceLocation],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,

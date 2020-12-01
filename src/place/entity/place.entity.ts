@@ -1,7 +1,8 @@
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { CoreEntity } from 'src/common/entity/common.entity';
-import { Column, Entity, OneToMany } from 'typeorm';
+import { Column, Entity, ManyToOne, OneToMany } from 'typeorm';
 import { Booking } from '../../booking/entity/booking.entity';
+import { PlaceLocation } from './location.entity';
 
 @InputType('PlaceInputType', { isAbstract: true })
 @ObjectType()
@@ -12,8 +13,8 @@ export class Place extends CoreEntity {
   placeName: string;
 
   @Field((type) => String)
-  @Column()
-  placeLocation: string;
+  @ManyToOne((type) => PlaceLocation, (placeLocation) => placeLocation.places)
+  placeLocation: PlaceLocation;
 
   @Field((type) => [Booking])
   @OneToMany((type) => Booking, (booking) => booking.place, {
