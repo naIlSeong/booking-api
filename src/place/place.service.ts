@@ -8,6 +8,10 @@ import {
 import { CreatePlaceInput, CreatePlaceOutput } from './dto/create-place.dto';
 import { DeletePlaceInput, DeletePlaceOutput } from './dto/delete-place.dto';
 import { EditPlaceInput, EditPlaceOutput } from './dto/edit-place.dto';
+import {
+  LocationDetailInput,
+  LocationDetailOutput,
+} from './dto/location-detail.dto';
 import { PlaceDetailInput, PlaceDetailOutput } from './dto/place-detail.dto';
 import {
   ToggleIsAvialableInput,
@@ -204,6 +208,34 @@ export class PlaceService {
       await this.locationRepo.save(this.locationRepo.create({ locationName }));
       return {
         ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async locationDetail({
+    locationId,
+  }: LocationDetailInput): Promise<LocationDetailOutput> {
+    try {
+      const location = await this.locationRepo.findOne({
+        where: {
+          id: locationId,
+        },
+        relations: ['places'],
+      });
+      if (!location) {
+        return {
+          ok: false,
+          error: 'Location not found',
+        };
+      }
+      return {
+        ok: true,
+        location,
       };
     } catch (error) {
       return {

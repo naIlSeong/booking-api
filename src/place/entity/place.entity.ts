@@ -16,7 +16,7 @@ export class Place extends CoreEntity {
   @ManyToOne((type) => PlaceLocation, (placeLocation) => placeLocation.places)
   placeLocation: PlaceLocation;
 
-  @Field((type) => [Booking])
+  @Field((type) => [Booking], { nullable: true })
   @OneToMany((type) => Booking, (booking) => booking.place, {
     nullable: true,
     onDelete: 'CASCADE',

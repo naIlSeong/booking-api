@@ -7,6 +7,10 @@ import {
 import { CreatePlaceInput, CreatePlaceOutput } from './dto/create-place.dto';
 import { DeletePlaceInput, DeletePlaceOutput } from './dto/delete-place.dto';
 import { EditPlaceInput, EditPlaceOutput } from './dto/edit-place.dto';
+import {
+  LocationDetailInput,
+  LocationDetailOutput,
+} from './dto/location-detail.dto';
 import { PlaceDetailInput, PlaceDetailOutput } from './dto/place-detail.dto';
 import {
   ToggleIsAvialableInput,
@@ -71,5 +75,13 @@ export class LocationResolver {
     @Args('input') createLocationInput: CreateLocationInput,
   ): Promise<CreateLocationOutput> {
     return this.placeService.createLocation(createLocationInput);
+  }
+
+  @Query((returns) => LocationDetailOutput)
+  @Role(['Any'])
+  locationDetail(
+    @Args('input') locationDetailInput: LocationDetailInput,
+  ): Promise<LocationDetailOutput> {
+    return this.placeService.locationDetail(locationDetailInput);
   }
 }

@@ -7,7 +7,7 @@ import { Place } from './place.entity';
 @ObjectType()
 @Entity()
 export class PlaceLocation extends CoreEntity {
-  @Field((type) => Place)
+  @Field((type) => [Place], { nullable: true })
   @OneToMany((type) => Place, (place) => place.placeLocation, {
     nullable: true,
     onDelete: 'CASCADE',
