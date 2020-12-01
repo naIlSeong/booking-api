@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import {
+  CreateLocationInput,
+  CreateLocationOutput,
+} from './dto/create-loaction.dto';
 import { CreatePlaceInput, CreatePlaceOutput } from './dto/create-place.dto';
 import { DeletePlaceInput, DeletePlaceOutput } from './dto/delete-place.dto';
 import { EditPlaceInput, EditPlaceOutput } from './dto/edit-place.dto';
@@ -177,6 +181,29 @@ export class PlaceService {
       return {
         ok: true,
         place,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async createLocation({
+    locationName,
+  }: CreateLocationInput): Promise<CreateLocationOutput> {
+    try {
+      const exist = await this.locationRepo.findOne({ locationName });
+      if (exist) {
+        return {
+          ok: false,
+          error: 'Already location exist',
+        };
+      }
+      await this.locationRepo.save(this.locationRepo.create({ locationName }));
+      return {
+        ok: true,
       };
     } catch (error) {
       return {

@@ -1,5 +1,9 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Role } from 'src/auth/role.decorator';
+import {
+  CreateLocationInput,
+  CreateLocationOutput,
+} from './dto/create-loaction.dto';
 import { CreatePlaceInput, CreatePlaceOutput } from './dto/create-place.dto';
 import { DeletePlaceInput, DeletePlaceOutput } from './dto/delete-place.dto';
 import { EditPlaceInput, EditPlaceOutput } from './dto/edit-place.dto';
@@ -8,6 +12,7 @@ import {
   ToggleIsAvialableInput,
   ToggleIsAvialableOutput,
 } from './dto/toggle-IsAvailable.dto';
+import { PlaceLocation } from './entity/location.entity';
 import { Place } from './entity/place.entity';
 import { PlaceService } from './place.service';
 
@@ -53,5 +58,18 @@ export class PlaceResolver {
     @Args('input') placeDetailInput: PlaceDetailInput,
   ): Promise<PlaceDetailOutput> {
     return this.placeService.placeDetail(placeDetailInput);
+  }
+}
+
+@Resolver((of) => PlaceLocation)
+export class LocationResolver {
+  constructor(private readonly placeService: PlaceService) {}
+
+  @Mutation((returns) => CreateLocationOutput)
+  @Role(['Admin'])
+  createLocation(
+    @Args('input') createLocationInput: CreateLocationInput,
+  ): Promise<CreateLocationOutput> {
+    return this.placeService.createLocation(createLocationInput);
   }
 }
