@@ -9,6 +9,8 @@ import { JwtModule } from './jwt/jwt.module';
 import { AuthModule } from './auth/auth.module';
 import { BookingModule } from './booking/booking.module';
 import { Booking } from './booking/entity/booking.entity';
+import { Place } from './place/entity/place.entity';
+import { PlaceModule } from './place/place.module';
 
 @Module({
   imports: [
@@ -36,7 +38,7 @@ import { Booking } from './booking/entity/booking.entity';
       database: process.env.DB_DATABASE,
       synchronize: true,
       logging: true,
-      entities: [User, Booking],
+      entities: [User, Booking, Place],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
@@ -48,6 +50,7 @@ import { Booking } from './booking/entity/booking.entity';
     AuthModule,
     UserModule,
     BookingModule,
+    PlaceModule,
   ],
 })
 export class AppModule {}

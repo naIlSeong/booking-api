@@ -19,4 +19,5 @@ Place 🏟
   - [x] Add Participants
   - Create inUse (1h)
   - Extends use time (30m)
+- [ ] Place CRUD
 - [ ] Verify Student Email

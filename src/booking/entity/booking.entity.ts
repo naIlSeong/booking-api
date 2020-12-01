@@ -9,13 +9,14 @@ import {
   ManyToOne,
   RelationId,
 } from 'typeorm';
+import { Place } from '../../place/entity/place.entity';
 
 @InputType('BookingInputType', { isAbstract: true })
 @ObjectType()
 @Entity()
 export class Booking extends CoreEntity {
   @Field((type) => String)
-  @Column()
+  @ManyToOne((type) => Place, (place) => place.bookings)
   place: string;
 
   @Field((type) => String, { nullable: true })
