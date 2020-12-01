@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePlaceInput, CreatePlaceOutput } from './dto/create-place.dto';
+import { EditPlaceInput, EditPlaceOutput } from './dto/edit-place.dto';
 import {
   ToggleIsAvialableInput,
   ToggleIsAvialableOutput,
@@ -56,6 +57,32 @@ export class PlaceService {
       return {
         ok: true,
         isAvailable: place.isAvailable,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async editPlace(editPlaceInput: EditPlaceInput): Promise<EditPlaceOutput> {
+    try {
+      const place = await this.placeRepo.findOne({
+        id: editPlaceInput.placeId,
+      });
+      if (!place) {
+        return {
+          ok: false,
+          error: 'Place not found',
+        };
+      }
+      await this.placeRepo.save([
+        { id: editPlaceInput.placeId, ...editPlaceInput },
+      ]);
+
+      return {
+        ok: true,
       };
     } catch (error) {
       return {
