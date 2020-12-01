@@ -8,9 +8,11 @@ import { Booking } from '../../booking/entity/booking.entity';
 @Entity()
 export class Place extends CoreEntity {
   @Field((type) => String)
+  @Column()
   placeName: string;
 
   @Field((type) => String)
+  @Column()
   placeLocation: string;
 
   @Field((type) => [Booking])
