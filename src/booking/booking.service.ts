@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Place } from 'src/place/entity/place.entity';
 import { User } from 'src/user/entity/user.entity';
 import { LessThan, MoreThan, Repository } from 'typeorm';
 import {
@@ -28,6 +29,8 @@ export class BookingService {
     private readonly bookingRepo: Repository<Booking>,
     @InjectRepository(User)
     private readonly userRepo: Repository<User>,
+    @InjectRepository(Place)
+    private readonly placeRepo: Repository<Place>,
   ) {}
 
   async createBooking(
@@ -35,17 +38,32 @@ export class BookingService {
     representative: User,
   ): Promise<CreateBookingOutput> {
     try {
+      const place = await this.placeRepo.findOne({
+        id: createBookingInput.placeId,
+      });
+      if (!place) {
+        return {
+          ok: false,
+          error: 'Place not found',
+        };
+      }
+      if (place.isAvailable === false) {
+        return {
+          ok: false,
+          error: 'Place not available',
+        };
+      }
       const startEarly = await this.bookingRepo.findOne({
-        place: createBookingInput.place,
+        place,
         startAt: LessThan(createBookingInput.startAt),
         endAt: MoreThan(createBookingInput.startAt),
       });
       const startInTheMiddle1 = await this.bookingRepo.findOne({
-        place: createBookingInput.place,
+        place,
         startAt: MoreThan(createBookingInput.startAt),
       });
       const startInTheMiddle2 = await this.bookingRepo.findOne({
-        place: createBookingInput.place,
+        place,
         startAt: LessThan(createBookingInput.endAt),
       });
       if (startEarly || (startInTheMiddle1 && startInTheMiddle2)) {
@@ -58,6 +76,7 @@ export class BookingService {
       await this.bookingRepo.save(
         this.bookingRepo.create({
           representative,
+          place,
           ...createBookingInput,
         }),
       );
@@ -77,7 +96,7 @@ export class BookingService {
   }: BookingDetailInput): Promise<BookingDetailOutput> {
     try {
       const booking = await this.bookingRepo.findOne(bookingId, {
-        relations: ['participants'],
+        relations: ['participants', 'place'],
       });
       if (!booking) {
         return {
@@ -100,7 +119,7 @@ export class BookingService {
   async getBookings(user: User): Promise<GetBookingsOutput> {
     try {
       const bookings = await this.bookingRepo.find({
-        relations: ['participants'],
+        relations: ['place'],
         where: {
           representative: user,
         },

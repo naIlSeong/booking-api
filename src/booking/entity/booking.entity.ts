@@ -15,9 +15,9 @@ import { Place } from '../../place/entity/place.entity';
 @ObjectType()
 @Entity()
 export class Booking extends CoreEntity {
-  @Field((type) => String)
+  @Field((type) => Place)
   @ManyToOne((type) => Place, (place) => place.bookings)
-  place: string;
+  place: Place;
 
   @Field((type) => String, { nullable: true })
   @Column({ nullable: true })
