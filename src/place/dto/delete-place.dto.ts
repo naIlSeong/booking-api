@@ -5,6 +5,9 @@ import { CoreOutput } from 'src/common/dto/common.dto';
 export class DeletePlaceInput {
   @Field((type) => Int)
   placeId: number;
+
+  @Field((type) => Int)
+  locationId: number;
 }
 
 @ObjectType()
