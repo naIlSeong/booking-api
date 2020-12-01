@@ -15,6 +15,7 @@ import {
   DeleteBookingInput,
   DeleteBookingOutput,
 } from './dto/delete-booking.dto';
+import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
 import { GetBookingsOutput } from './dto/get-bookings.dto';
 import {
   RegisterParticipantInput,
@@ -74,5 +75,14 @@ export class BookingResolver {
       deleteBookingInput,
       representative,
     );
+  }
+
+  @Mutation((returns) => EditBookingOutput)
+  @Role(['User'])
+  editBooking(
+    @Args('input') editBookingInput: EditBookingInput,
+    @AuthUser() representative: User,
+  ): Promise<EditBookingOutput> {
+    return this.bookingService.editBooking(editBookingInput, representative);
   }
 }

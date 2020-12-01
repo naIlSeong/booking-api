@@ -15,6 +15,7 @@ import {
   DeleteBookingInput,
   DeleteBookingOutput,
 } from './dto/delete-booking.dto';
+import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
 import { GetBookingsOutput } from './dto/get-bookings.dto';
 import {
   RegisterParticipantInput,
@@ -32,6 +33,50 @@ export class BookingService {
     @InjectRepository(Place)
     private readonly placeRepo: Repository<Place>,
   ) {}
+
+  async checkSchedule(place: Place, startAt: Date, endAt: Date) {
+    const startEarly = await this.bookingRepo.find({
+      place,
+      startAt: LessThan(startAt),
+      endAt: MoreThan(startAt),
+    });
+    const startLater1 = await this.bookingRepo.find({
+      place,
+      startAt: MoreThan(startAt),
+    });
+    const startLater2 = await this.bookingRepo.find({
+      place,
+      startAt: LessThan(endAt),
+    });
+    const startLater: Booking[] = [];
+    startLater1.forEach((a) =>
+      startLater2.forEach((b) => {
+        if (a.id === b.id) {
+          startLater.push(a);
+        }
+      }),
+    );
+    return { startEarly, startLater };
+  }
+
+  isMyBooking(
+    bookingId: number,
+    startEarly: Booking[],
+    startLater: Booking[],
+  ): boolean {
+    if (
+      (startEarly.length === 1 &&
+        startEarly[0].id === bookingId &&
+        startLater.length === 0) ||
+      (startEarly.length === 0 &&
+        startLater.length === 1 &&
+        startLater[0].id === bookingId)
+    ) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   async createBooking(
     createBookingInput: CreateBookingInput,
@@ -53,20 +98,13 @@ export class BookingService {
           error: 'Place not available',
         };
       }
-      const startEarly = await this.bookingRepo.findOne({
+      const { startEarly, startLater } = await this.checkSchedule(
         place,
-        startAt: LessThan(createBookingInput.startAt),
-        endAt: MoreThan(createBookingInput.startAt),
-      });
-      const startInTheMiddle1 = await this.bookingRepo.findOne({
-        place,
-        startAt: MoreThan(createBookingInput.startAt),
-      });
-      const startInTheMiddle2 = await this.bookingRepo.findOne({
-        place,
-        startAt: LessThan(createBookingInput.endAt),
-      });
-      if (startEarly || (startInTheMiddle1 && startInTheMiddle2)) {
+        createBookingInput.startAt,
+        createBookingInput.endAt,
+      );
+      const existBooking = startEarly.length !== 0 || startLater.length !== 0;
+      if (existBooking) {
         return {
           ok: false,
           error: 'Already booking exist',
@@ -216,6 +254,117 @@ export class BookingService {
       return {
         ok: false,
         error,
+      };
+    }
+  }
+
+  async editBooking(
+    { teamName, startAt, endAt, bookingId, placeId, userId }: EditBookingInput,
+    representative: User,
+  ): Promise<EditBookingOutput> {
+    try {
+      const booking = await this.bookingRepo.findOne({
+        where: {
+          id: bookingId,
+        },
+        relations: ['place'],
+      });
+      if (!booking) {
+        return {
+          ok: false,
+          error: 'Booking not found',
+        };
+      }
+      if (booking.representativeId !== representative.id) {
+        return {
+          ok: false,
+          error: "You can't do this",
+        };
+      }
+
+      // 장소 변경
+      if (placeId) {
+        const place = await this.placeRepo.findOne({ id: placeId });
+        if (!place) {
+          return {
+            ok: false,
+            error: 'Place not found',
+          };
+        }
+        if (place.isAvailable === false) {
+          return {
+            ok: false,
+            error: 'Place not available',
+          };
+        }
+        // check startAt & endAt
+        if (!startAt && !endAt) {
+          startAt = booking.startAt;
+          endAt = booking.endAt;
+        }
+        const { startEarly, startLater } = await this.checkSchedule(
+          booking.place,
+          startAt,
+          endAt,
+        );
+        if (startEarly.length !== 0 || startLater.length !== 0) {
+          if (this.isMyBooking(bookingId, startEarly, startLater) === false) {
+            return {
+              ok: false,
+              error: 'Already booking exist',
+            };
+          }
+        }
+        booking.startAt = startAt;
+        booking.endAt = endAt;
+        booking.place = place;
+      }
+
+      // 시간 변경
+      if (startAt && endAt) {
+        // check startAt & endAt
+        const { startEarly, startLater } = await this.checkSchedule(
+          booking.place,
+          startAt,
+          endAt,
+        );
+        if (startEarly.length !== 0 || startLater.length !== 0) {
+          if (this.isMyBooking(bookingId, startEarly, startLater) === false) {
+            return {
+              ok: false,
+              error: 'Already booking exist',
+            };
+          }
+        }
+        booking.startAt = startAt;
+        booking.endAt = endAt;
+      }
+
+      // representative 변경
+      if (userId) {
+        const newRepresentative = await this.userRepo.findOne({ id: userId });
+        if (!newRepresentative) {
+          return {
+            ok: false,
+            error: 'User not found',
+          };
+        }
+        booking.representative = newRepresentative;
+      }
+
+      if (teamName) {
+        booking.teamName = teamName;
+      }
+
+      await this.bookingRepo.save(booking);
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
       };
     }
   }
