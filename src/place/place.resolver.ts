@@ -1,6 +1,10 @@
 import { Args, Mutation, Resolver } from '@nestjs/graphql';
 import { Role } from 'src/auth/role.decorator';
 import { CreatePlaceInput, CreatePlaceOutput } from './dto/create-place.dto';
+import {
+  ToggleIsAvialableInput,
+  ToggleIsAvialableOutput,
+} from './dto/toggle-IsAvailable.dto';
 import { Place } from './entity/place.entity';
 import { PlaceService } from './place.service';
 
@@ -14,5 +18,13 @@ export class PlaceResolver {
     @Args('input') createPlaceInput: CreatePlaceInput,
   ): Promise<CreatePlaceOutput> {
     return this.placeService.createPlace(createPlaceInput);
+  }
+
+  @Mutation((returns) => ToggleIsAvialableOutput)
+  @Role(['Admin'])
+  toggleIsAvailable(
+    @Args('input') toggleIsAvailableInput: ToggleIsAvialableInput,
+  ): Promise<ToggleIsAvialableOutput> {
+    return this.placeService.toggleIsAvailable(toggleIsAvailableInput);
   }
 }

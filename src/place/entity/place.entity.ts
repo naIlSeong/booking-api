@@ -22,4 +22,8 @@ export class Place extends CoreEntity {
   @Field((type) => Boolean)
   @Column({ default: false })
   inUse: boolean;
+
+  @Field((type) => Boolean)
+  @Column({ default: false })
+  isAvailable: boolean;
 }
