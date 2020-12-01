@@ -1,8 +1,9 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Role } from 'src/auth/role.decorator';
 import { CreatePlaceInput, CreatePlaceOutput } from './dto/create-place.dto';
 import { DeletePlaceInput, DeletePlaceOutput } from './dto/delete-place.dto';
 import { EditPlaceInput, EditPlaceOutput } from './dto/edit-place.dto';
+import { PlaceDetailInput, PlaceDetailOutput } from './dto/place-detail.dto';
 import {
   ToggleIsAvialableInput,
   ToggleIsAvialableOutput,
@@ -44,5 +45,13 @@ export class PlaceResolver {
     @Args('input') deletePlaceInput: DeletePlaceInput,
   ): Promise<DeletePlaceOutput> {
     return this.placeService.deletePlace(deletePlaceInput);
+  }
+
+  @Query((returns) => PlaceDetailOutput)
+  @Role(['Any'])
+  placeDetail(
+    @Args('input') placeDetailInput: PlaceDetailInput,
+  ): Promise<PlaceDetailOutput> {
+    return this.placeService.placeDetail(placeDetailInput);
   }
 }

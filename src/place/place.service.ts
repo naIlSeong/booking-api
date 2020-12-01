@@ -4,6 +4,7 @@ import { Repository } from 'typeorm';
 import { CreatePlaceInput, CreatePlaceOutput } from './dto/create-place.dto';
 import { DeletePlaceInput, DeletePlaceOutput } from './dto/delete-place.dto';
 import { EditPlaceInput, EditPlaceOutput } from './dto/edit-place.dto';
+import { PlaceDetailInput, PlaceDetailOutput } from './dto/place-detail.dto';
 import {
   ToggleIsAvialableInput,
   ToggleIsAvialableOutput,
@@ -113,6 +114,33 @@ export class PlaceService {
       await this.placeRepo.delete(placeId);
       return {
         ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async placeDetail({ placeId }: PlaceDetailInput): Promise<PlaceDetailOutput> {
+    try {
+      const place = await this.placeRepo.findOne({
+        where: {
+          id: placeId,
+        },
+        relations: ['bookings'],
+      });
+      if (!place) {
+        return {
+          ok: false,
+          error: 'Place not found',
+        };
+      }
+
+      return {
+        ok: true,
+        place,
       };
     } catch (error) {
       return {
