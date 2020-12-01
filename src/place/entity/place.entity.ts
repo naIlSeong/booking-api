@@ -16,7 +16,10 @@ export class Place extends CoreEntity {
   placeLocation: string;
 
   @Field((type) => [Booking])
-  @OneToMany((type) => Booking, (booking) => booking.place, { nullable: true })
+  @OneToMany((type) => Booking, (booking) => booking.place, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   bookings?: Booking[];
 
   @Field((type) => Boolean)

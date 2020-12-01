@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreatePlaceInput, CreatePlaceOutput } from './dto/create-place.dto';
+import { DeletePlaceInput, DeletePlaceOutput } from './dto/delete-place.dto';
 import { EditPlaceInput, EditPlaceOutput } from './dto/edit-place.dto';
 import {
   ToggleIsAvialableInput,
@@ -81,6 +82,35 @@ export class PlaceService {
         { id: editPlaceInput.placeId, ...editPlaceInput },
       ]);
 
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async deletePlace({ placeId }: DeletePlaceInput): Promise<DeletePlaceOutput> {
+    try {
+      const place = await this.placeRepo.findOne({
+        id: placeId,
+      });
+      if (!place) {
+        return {
+          ok: false,
+          error: 'Place not found',
+        };
+      }
+      if (place.inUse === true || place.isAvailable === true) {
+        return {
+          ok: false,
+          error: "Check 'inUse' and 'isAvailable' is false",
+        };
+      }
+      await this.placeRepo.delete(placeId);
       return {
         ok: true,
       };
