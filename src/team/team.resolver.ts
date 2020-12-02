@@ -1,4 +1,4 @@
-import { Args, Mutation, Resolver } from '@nestjs/graphql';
+import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AuthUser } from 'src/auth/auth.decorator';
 import { Role } from 'src/auth/role.decorator';
 import { User } from 'src/user/entity/user.entity';
@@ -8,6 +8,7 @@ import {
   RegisterMemberInput,
   RegisterMemberOutput,
 } from './dto/register-member.dto';
+import { TeamDetailInput, TeamDetailOutput } from './dto/team-detail.dto';
 import { Team } from './entity/team.entity';
 import { TeamService } from './team.service';
 
@@ -40,5 +41,13 @@ export class TeamResolver {
     @AuthUser() user: User,
   ): Promise<EditTeamOutput> {
     return this.teamService.editTeam(editTeamInput, user);
+  }
+
+  @Query((returns) => TeamDetailOutput)
+  @Role(['User'])
+  teamDetail(
+    @Args('input') teamDetailInput: TeamDetailInput,
+  ): Promise<TeamDetailOutput> {
+    return this.teamService.teamDetail(teamDetailInput);
   }
 }

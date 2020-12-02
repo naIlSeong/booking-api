@@ -26,7 +26,7 @@ Booking ⏰
   - [x] Create Team
   - [x] Register user to team
   - [x] Edit team
-  - Team Detail
+  - [x] Team Detail
   - get Teams
   - Delete team
 - [ ] Verify Student Email

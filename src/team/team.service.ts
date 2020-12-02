@@ -8,6 +8,7 @@ import {
   RegisterMemberInput,
   RegisterMemberOutput,
 } from './dto/register-member.dto';
+import { TeamDetailInput, TeamDetailOutput } from './dto/team-detail.dto';
 import { Team } from './entity/team.entity';
 
 @Injectable()
@@ -145,6 +146,30 @@ export class TeamService {
       await this.teamRepo.save(team);
       return {
         ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async teamDetail({ teamId }: TeamDetailInput): Promise<TeamDetailOutput> {
+    try {
+      const team = await this.teamRepo.findOne({
+        where: { id: teamId },
+        relations: ['members', 'bookings'],
+      });
+      if (!team) {
+        return {
+          ok: false,
+          error: 'Team not found',
+        };
+      }
+      return {
+        ok: true,
+        team,
       };
     } catch (error) {
       return {
