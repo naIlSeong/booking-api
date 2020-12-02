@@ -7,10 +7,19 @@ import {
 } from '@nestjs/graphql';
 import { IsEmail, IsEnum, IsInt, IsString, Length } from 'class-validator';
 import { CoreEntity } from 'src/common/entity/common.entity';
-import { BeforeInsert, BeforeUpdate, Column, Entity, OneToMany } from 'typeorm';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  ManyToOne,
+  OneToMany,
+  RelationId,
+} from 'typeorm';
 import * as bcrypt from 'bcrypt';
 import { InternalServerErrorException } from '@nestjs/common';
 import { Booking } from 'src/booking/entity/booking.entity';
+import { Team } from 'src/team/entity/team.entity';
 
 export enum UserRole {
   Admin = 'Admin',
@@ -56,6 +65,13 @@ export class User extends CoreEntity {
     onDelete: 'CASCADE',
   })
   bookings: Booking[];
+
+  @Field((type) => Team)
+  @ManyToOne((type) => Team, (team) => team.members, { nullable: true })
+  team?: Team;
+
+  @RelationId((user: User) => user.team)
+  teamId: number;
 
   @BeforeInsert()
   @BeforeUpdate()

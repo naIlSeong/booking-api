@@ -1,6 +1,7 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { CoreEntity } from 'src/common/entity/common.entity';
+import { Team } from 'src/team/entity/team.entity';
 import { User } from 'src/user/entity/user.entity';
 import {
   BeforeInsert,
@@ -23,8 +24,8 @@ export class Booking extends CoreEntity {
   place: Place;
 
   @Field((type) => String, { nullable: true })
-  @Column({ nullable: true })
-  teamName?: string;
+  @ManyToOne((type) => Team, (team) => team.bookings, { nullable: true })
+  team?: Team;
 
   @Field((type) => User)
   @ManyToOne((type) => User, (user) => user.bookings, { eager: true })

@@ -13,6 +13,8 @@ import { Place } from './place/entity/place.entity';
 import { PlaceModule } from './place/place.module';
 import { PlaceLocation } from './place/entity/location.entity';
 import { ScheduleModule } from '@nestjs/schedule';
+import { TeamModule } from './team/team.module';
+import { Team } from './team/entity/team.entity';
 
 @Module({
   imports: [
@@ -40,7 +42,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       database: process.env.DB_DATABASE,
       synchronize: true,
       logging: true,
-      entities: [User, Booking, Place, PlaceLocation],
+      entities: [User, Booking, Place, PlaceLocation, Team],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
@@ -54,6 +56,7 @@ import { ScheduleModule } from '@nestjs/schedule';
     UserModule,
     BookingModule,
     PlaceModule,
+    TeamModule,
   ],
 })
 export class AppModule {}
