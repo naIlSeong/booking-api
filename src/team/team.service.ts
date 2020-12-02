@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { CreateTeamInput, CreateTeamOutput } from './dto/create-team.dto';
+import { EditTeamInput, EditTeamOutput } from './dto/edit-team.dto';
 import {
   RegisterMemberInput,
   RegisterMemberOutput,
@@ -72,6 +73,13 @@ export class TeamService {
           error: 'Team not found',
         };
       }
+      if (user.teamId !== team.id) {
+        return {
+          ok: false,
+          error: "You can't do this",
+        };
+      }
+
       const member = await this.userRepo.findOne({ id: memberId });
       if (!member) {
         return {
@@ -97,6 +105,51 @@ export class TeamService {
       return {
         ok: false,
         error,
+      };
+    }
+  }
+
+  async editTeam(
+    { teamId, teamName }: EditTeamInput,
+    user: User,
+  ): Promise<EditTeamOutput> {
+    try {
+      if (!user.teamId) {
+        return {
+          ok: false,
+          error: 'Not have a team',
+        };
+      }
+      const team = await this.teamRepo.findOne({ id: teamId });
+      if (!team) {
+        return {
+          ok: false,
+          error: 'Team not found',
+        };
+      }
+      if (user.teamId !== team.id) {
+        return {
+          ok: false,
+          error: "You can't do this",
+        };
+      }
+      const exist = await this.teamRepo.findOne({ teamName });
+      if (exist) {
+        return {
+          ok: false,
+          error: 'Already team exist',
+        };
+      }
+
+      team.teamName = teamName;
+      await this.teamRepo.save(team);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
       };
     }
   }
