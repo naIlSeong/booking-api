@@ -11,6 +11,7 @@ import {
   CreateBookingInput,
   CreateBookingOutput,
 } from './dto/create-booking.dto';
+import { CreateInUseInput, CreateInUseOutput } from './dto/create-in-use.dto';
 import {
   DeleteBookingInput,
   DeleteBookingOutput,
@@ -357,6 +358,54 @@ export class BookingService {
       }
 
       await this.bookingRepo.save(booking);
+
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async createInUse(
+    { placeId }: CreateInUseInput,
+    user: User,
+  ): Promise<CreateInUseOutput> {
+    try {
+      const place = await this.placeRepo.findOne({ id: placeId });
+      if (!place) {
+        return {
+          ok: false,
+          error: 'Place not found',
+        };
+      }
+
+      const startAt: Date = new Date();
+      const endAt: Date = new Date(startAt.getTime() + 3600000);
+
+      const { startEarly, startLater } = await this.checkSchedule(
+        place,
+        startAt,
+        endAt,
+      );
+      if (startEarly.length !== 0 || startLater.length !== 0) {
+        return {
+          ok: false,
+          error: 'Already booking exist',
+        };
+      }
+
+      await this.bookingRepo.save(
+        this.bookingRepo.create({
+          startAt,
+          endAt,
+          place,
+          representative: user,
+        }),
+      );
 
       return {
         ok: true,

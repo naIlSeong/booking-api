@@ -17,7 +17,7 @@ Booking ⏰
 - [ ] Booking CRUD
   - [x] Edit Booking (time, place, representative, teamName)
   - [x] Add Participants
-  - Create inUse (1h) (CRON Job)
+  - [x] Create inUse (1h) (CRON Job)
   - Extends use time (30m) (CRON Job)
 - [x] Place CRUD
 - [ ] Team Module

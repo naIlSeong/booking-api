@@ -11,6 +11,7 @@ import {
   CreateBookingInput,
   CreateBookingOutput,
 } from './dto/create-booking.dto';
+import { CreateInUseInput, CreateInUseOutput } from './dto/create-in-use.dto';
 import {
   DeleteBookingInput,
   DeleteBookingOutput,
@@ -84,5 +85,14 @@ export class BookingResolver {
     @AuthUser() representative: User,
   ): Promise<EditBookingOutput> {
     return this.bookingService.editBooking(editBookingInput, representative);
+  }
+
+  @Mutation((returns) => CreateInUseOutput)
+  @Role(['User'])
+  createInUse(
+    @Args('input') createInUseInput: CreateInUseInput,
+    @AuthUser() user: User,
+  ): Promise<CreateInUseOutput> {
+    return this.bookingService.createInUse(createInUseInput, user);
   }
 }
