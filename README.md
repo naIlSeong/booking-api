@@ -23,8 +23,8 @@ Booking ⏰
   - [x] finish inUse
 - [x] Place CRUD
 - [ ] Team Module
-  - Create Team
-  - Register user to team
+  - [x] Create Team
+  - [x] Register user to team
   - Edit team
   - Delete team
 - [ ] Verify Student Email
