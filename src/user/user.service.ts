@@ -106,6 +106,7 @@ export class UserService {
     }
   }
 
+  // Todo: Team
   async editUser(
     { username, password }: EditUserInput,
     user: User,

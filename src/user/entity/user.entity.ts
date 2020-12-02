@@ -66,8 +66,10 @@ export class User extends CoreEntity {
   })
   bookings: Booking[];
 
-  @Field((type) => Team)
-  @ManyToOne((type) => Team, (team) => team.members, { nullable: true })
+  @Field((type) => Team, { nullable: true })
+  @ManyToOne((type) => Team, (team) => team.members, {
+    nullable: true,
+  })
   team?: Team;
 
   @RelationId((user: User) => user.team)
