@@ -18,6 +18,7 @@ import {
   DeleteBookingOutput,
 } from './dto/delete-booking.dto';
 import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
+import { ExtendInUseInput, ExtendInUseOutput } from './dto/extend-in-use.dto';
 import { GetBookingsOutput } from './dto/get-bookings.dto';
 import {
   RegisterParticipantInput,
@@ -100,5 +101,14 @@ export class BookingResolver {
   @Cron('0 */10 * * * *')
   checkInUse() {
     return this.bookingService.checkInUse();
+  }
+
+  @Mutation((returns) => ExtendInUseOutput)
+  @Role(['User'])
+  extendInUse(
+    @Args('input') extendInUseInput: ExtendInUseInput,
+    @AuthUser() representative: User,
+  ): Promise<ExtendInUseOutput> {
+    return this.bookingService.extendInUse(extendInUseInput, representative);
   }
 }

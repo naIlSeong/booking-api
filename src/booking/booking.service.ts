@@ -17,6 +17,7 @@ import {
   DeleteBookingOutput,
 } from './dto/delete-booking.dto';
 import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
+import { ExtendInUseInput, ExtendInUseOutput } from './dto/extend-in-use.dto';
 import { GetBookingsOutput } from './dto/get-bookings.dto';
 import {
   RegisterParticipantInput,
@@ -457,6 +458,51 @@ export class BookingService {
     } catch (error) {
       console.log(error);
       throw new InternalServerErrorException();
+    }
+  }
+
+  async extendInUse(
+    { bookingId }: ExtendInUseInput,
+    representative: User,
+  ): Promise<ExtendInUseOutput> {
+    try {
+      const booking = await this.bookingRepo.findOne({ id: bookingId });
+      if (!booking) {
+        return {
+          ok: false,
+          error: 'Booking not found',
+        };
+      }
+      if (booking.representativeId !== representative.id) {
+        return {
+          ok: false,
+          error: "You can't do this",
+        };
+      }
+      if (booking.inUse === false) {
+        return {
+          ok: false,
+          error: 'Not in use',
+        };
+      }
+      const now: Date = new Date();
+      if (booking.endAt.valueOf() - now.valueOf() > 600000) {
+        return {
+          ok: false,
+          error: "Can't extend now",
+        };
+      }
+
+      booking.endAt = new Date(booking.endAt.getTime() + 1800000);
+      await this.bookingRepo.save(booking);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
     }
   }
 }

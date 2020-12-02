@@ -19,7 +19,7 @@ Booking ⏰
   - [x] Add Participants
   - [x] Create inUse (1h) (CRON Job)
   - [x] check inUse (every 10m) (CRON Job)
-  - [ ] Extends inUse time (30m) (CRON Job)
+  - [x] Extends inUse time (30m) (CRON Job)
   - [ ] finish inUse
 - [x] Place CRUD
 - [ ] Team Module
