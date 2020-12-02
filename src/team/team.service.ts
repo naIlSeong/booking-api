@@ -4,6 +4,7 @@ import { User } from 'src/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { CreateTeamInput, CreateTeamOutput } from './dto/create-team.dto';
 import { EditTeamInput, EditTeamOutput } from './dto/edit-team.dto';
+import { GetTeamsOutput } from './dto/get-teams.dto';
 import {
   RegisterMemberInput,
   RegisterMemberOutput,
@@ -170,6 +171,22 @@ export class TeamService {
       return {
         ok: true,
         team,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async getTeams(): Promise<GetTeamsOutput> {
+    try {
+      const teams = await this.teamRepo.find();
+
+      return {
+        ok: true,
+        teams,
       };
     } catch (error) {
       return {

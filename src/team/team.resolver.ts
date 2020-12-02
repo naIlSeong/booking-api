@@ -4,6 +4,7 @@ import { Role } from 'src/auth/role.decorator';
 import { User } from 'src/user/entity/user.entity';
 import { CreateTeamInput, CreateTeamOutput } from './dto/create-team.dto';
 import { EditTeamInput, EditTeamOutput } from './dto/edit-team.dto';
+import { GetTeamsOutput } from './dto/get-teams.dto';
 import {
   RegisterMemberInput,
   RegisterMemberOutput,
@@ -49,5 +50,11 @@ export class TeamResolver {
     @Args('input') teamDetailInput: TeamDetailInput,
   ): Promise<TeamDetailOutput> {
     return this.teamService.teamDetail(teamDetailInput);
+  }
+
+  @Query((returns) => GetTeamsOutput)
+  @Role(['User'])
+  getTeams(): Promise<GetTeamsOutput> {
+    return this.teamService.getTeams();
   }
 }
