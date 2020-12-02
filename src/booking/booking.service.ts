@@ -18,6 +18,7 @@ import {
 } from './dto/delete-booking.dto';
 import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
 import { ExtendInUseInput, ExtendInUseOutput } from './dto/extend-in-use.dto';
+import { FinishInUseInput, FinishInUseOutput } from './dto/finish-in-use.dto';
 import { GetBookingsOutput } from './dto/get-bookings.dto';
 import {
   RegisterParticipantInput,
@@ -441,19 +442,25 @@ export class BookingService {
       });
       nowInUse.forEach(async (booking) => {
         if (booking.inUse === false) {
-          booking.inUse = true;
-          await this.bookingRepo.save(booking);
+          if (booking.isFinished === false) {
+            booking.inUse = true;
+            await this.bookingRepo.save(booking);
+          }
         }
       });
 
       const finishedInUse = await this.bookingRepo.find({
         endAt: LessThan(now),
+        isFinished: false,
       });
       finishedInUse.forEach(async (booking) => {
         if (booking.inUse === true) {
           booking.inUse = false;
-          await this.bookingRepo.save(booking);
         }
+        if (booking.isFinished === false) {
+          booking.isFinished = true;
+        }
+        await this.bookingRepo.save(booking);
       });
     } catch (error) {
       console.log(error);
@@ -485,6 +492,12 @@ export class BookingService {
           error: 'Not in use',
         };
       }
+      if (booking.isFinished === true) {
+        return {
+          ok: false,
+          error: 'Already finished',
+        };
+      }
       const now: Date = new Date();
       if (booking.endAt.valueOf() - now.valueOf() > 600000) {
         return {
@@ -494,6 +507,52 @@ export class BookingService {
       }
 
       booking.endAt = new Date(booking.endAt.getTime() + 1800000);
+      await this.bookingRepo.save(booking);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async finishInUse(
+    { bookingId }: FinishInUseInput,
+    representative: User,
+  ): Promise<FinishInUseOutput> {
+    try {
+      const booking = await this.bookingRepo.findOne({ id: bookingId });
+      if (!booking) {
+        return {
+          ok: false,
+          error: 'Booking not found',
+        };
+      }
+      if (booking.representativeId !== representative.id) {
+        return {
+          ok: false,
+          error: "You can't to this",
+        };
+      }
+      if (booking.inUse === false) {
+        return {
+          ok: false,
+          error: 'Not in use',
+        };
+      }
+      if (booking.isFinished === true) {
+        return {
+          ok: false,
+          error: 'Already finished',
+        };
+      }
+
+      booking.inUse = false;
+      booking.isFinished = true;
+      booking.endAt = new Date();
       await this.bookingRepo.save(booking);
       return {
         ok: true,
