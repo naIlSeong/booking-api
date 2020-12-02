@@ -22,11 +22,11 @@ Booking ⏰
   - [x] Extends inUse time (30m) (CRON Job)
   - [x] finish inUse
 - [x] Place CRUD
-- [ ] Team Module
+- [x] Team Module
   - [x] Create Team
   - [x] Register user to team
   - [x] Edit team
   - [x] Team Detail
   - [x] get Teams
-  - Delete team
+  - [x] Delete team
 - [ ] Verify Student Email

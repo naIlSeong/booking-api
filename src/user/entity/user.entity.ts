@@ -69,6 +69,7 @@ export class User extends CoreEntity {
   @Field((type) => Team, { nullable: true })
   @ManyToOne((type) => Team, (team) => team.members, {
     nullable: true,
+    onDelete: 'SET NULL',
   })
   team?: Team;
 

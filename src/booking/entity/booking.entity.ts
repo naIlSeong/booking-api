@@ -24,7 +24,10 @@ export class Booking extends CoreEntity {
   place: Place;
 
   @Field((type) => String, { nullable: true })
-  @ManyToOne((type) => Team, (team) => team.bookings, { nullable: true })
+  @ManyToOne((type) => Team, (team) => team.bookings, {
+    nullable: true,
+    onDelete: 'CASCADE',
+  })
   team?: Team;
 
   @Field((type) => User)

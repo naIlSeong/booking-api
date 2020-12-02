@@ -3,6 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { CreateTeamInput, CreateTeamOutput } from './dto/create-team.dto';
+import { DeleteTeamInput, DeleteTeamOutput } from './dto/delete-team.dto';
 import { EditTeamInput, EditTeamOutput } from './dto/edit-team.dto';
 import { GetTeamsOutput } from './dto/get-teams.dto';
 import {
@@ -187,6 +188,43 @@ export class TeamService {
       return {
         ok: true,
         teams,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async deleteTeam(
+    { teamId }: DeleteTeamInput,
+    user: User,
+  ): Promise<DeleteTeamOutput> {
+    try {
+      if (!user.teamId) {
+        return {
+          ok: false,
+          error: 'Not have a team',
+        };
+      }
+      const team = await this.teamRepo.findOne({ id: teamId });
+      if (!team) {
+        return {
+          ok: false,
+          error: 'Team not found',
+        };
+      }
+      if (user.teamId !== team.id) {
+        return {
+          ok: false,
+          error: "You can't do this",
+        };
+      }
+
+      await this.teamRepo.delete({ id: teamId });
+      return {
+        ok: true,
       };
     } catch (error) {
       return {
