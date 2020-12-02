@@ -1,6 +1,7 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Place } from 'src/place/entity/place.entity';
+import { Team } from 'src/team/entity/team.entity';
 import { User } from 'src/user/entity/user.entity';
 import { LessThan, MoreThan, Repository } from 'typeorm';
 import {
@@ -35,6 +36,8 @@ export class BookingService {
     private readonly userRepo: Repository<User>,
     @InjectRepository(Place)
     private readonly placeRepo: Repository<Place>,
+    @InjectRepository(Team)
+    private readonly teamRepo: Repository<Team>,
   ) {}
 
   async checkSchedule(place: Place, startAt: Date, endAt: Date) {
@@ -114,13 +117,24 @@ export class BookingService {
         };
       }
 
-      await this.bookingRepo.save(
-        this.bookingRepo.create({
-          representative,
-          place,
-          ...createBookingInput,
-        }),
-      );
+      const booking = this.bookingRepo.create({
+        representative,
+        place,
+        ...createBookingInput,
+      });
+
+      if (createBookingInput.withTeam === true && representative.teamId) {
+        const team = await this.teamRepo.findOne({ id: representative.teamId });
+        if (!team) {
+          return {
+            ok: false,
+            error: 'Team not found',
+          };
+        }
+        booking.team = team;
+      }
+
+      await this.bookingRepo.save(booking);
       return {
         ok: true,
       };
@@ -137,7 +151,7 @@ export class BookingService {
   }: BookingDetailInput): Promise<BookingDetailOutput> {
     try {
       const booking = await this.bookingRepo.findOne(bookingId, {
-        relations: ['participants', 'place'],
+        relations: ['participants', 'place', 'team'],
       });
       if (!booking) {
         return {
@@ -160,7 +174,7 @@ export class BookingService {
   async getBookings(user: User): Promise<GetBookingsOutput> {
     try {
       const bookings = await this.bookingRepo.find({
-        relations: ['place'],
+        relations: ['place', 'team'],
         where: {
           representative: user,
         },
@@ -268,7 +282,7 @@ export class BookingService {
   }
 
   async editBooking(
-    { teamName, startAt, endAt, bookingId, placeId, userId }: EditBookingInput,
+    { startAt, endAt, bookingId, placeId, userId, teamId }: EditBookingInput,
     representative: User,
   ): Promise<EditBookingOutput> {
     try {
@@ -367,8 +381,15 @@ export class BookingService {
         booking.representative = newRepresentative;
       }
 
-      if (teamName) {
-        booking.teamName = teamName;
+      if (teamId) {
+        const team = await this.teamRepo.findOne({ id: teamId });
+        if (!team) {
+          return {
+            ok: false,
+            error: 'Team not found',
+          };
+        }
+        booking.team = team;
       }
 
       await this.bookingRepo.save(booking);
@@ -385,7 +406,7 @@ export class BookingService {
   }
 
   async createInUse(
-    { placeId }: CreateInUseInput,
+    { placeId, withTeam }: CreateInUseInput,
     user: User,
   ): Promise<CreateInUseOutput> {
     try {
@@ -412,15 +433,26 @@ export class BookingService {
         };
       }
 
-      await this.bookingRepo.save(
-        this.bookingRepo.create({
-          startAt,
-          endAt,
-          place,
-          representative: user,
-          inUse: true,
-        }),
-      );
+      const booking = this.bookingRepo.create({
+        startAt,
+        endAt,
+        place,
+        representative: user,
+        inUse: true,
+      });
+
+      if (withTeam === true) {
+        const team = await this.teamRepo.findOne({ id: user.teamId });
+        if (!team) {
+          return {
+            ok: false,
+            error: 'Team not found',
+          };
+        }
+        booking.team = team;
+      }
+
+      await this.bookingRepo.save(booking);
 
       return {
         ok: true,

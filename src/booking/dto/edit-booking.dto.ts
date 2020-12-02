@@ -11,7 +11,7 @@ import { Booking } from '../entity/booking.entity';
 
 @InputType()
 export class EditBookingInput extends PartialType(
-  PickType(Booking, ['teamName', 'startAt', 'endAt']),
+  PickType(Booking, ['startAt', 'endAt']),
 ) {
   @Field((type) => Int)
   bookingId?: number;
@@ -21,6 +21,9 @@ export class EditBookingInput extends PartialType(
 
   @Field((type) => Int, { nullable: true })
   userId?: number;
+
+  @Field((type) => Int, { nullable: true })
+  teamId?: number;
 }
 
 @ObjectType()

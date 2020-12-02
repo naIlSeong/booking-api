@@ -5,6 +5,9 @@ import { CoreOutput } from 'src/common/dto/common.dto';
 export class CreateInUseInput {
   @Field((type) => Int)
   placeId: number;
+
+  @Field((type) => Boolean, { defaultValue: false })
+  withTeam: boolean;
 }
 
 @ObjectType()
