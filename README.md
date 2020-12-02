@@ -18,7 +18,9 @@ Booking ⏰
   - [x] Edit Booking (time, place, representative, teamName)
   - [x] Add Participants
   - [x] Create inUse (1h) (CRON Job)
-  - Extends use time (30m) (CRON Job)
+  - [x] check inUse (every 10m) (CRON Job)
+  - [ ] Extends inUse time (30m) (CRON Job)
+  - [ ] finish inUse
 - [x] Place CRUD
 - [ ] Team Module
 - [ ] Verify Student Email

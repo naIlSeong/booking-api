@@ -1,4 +1,5 @@
 import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
+import { Cron } from '@nestjs/schedule';
 import { AuthUser } from 'src/auth/auth.decorator';
 import { Role } from 'src/auth/role.decorator';
 import { User } from 'src/user/entity/user.entity';
@@ -94,5 +95,10 @@ export class BookingResolver {
     @AuthUser() user: User,
   ): Promise<CreateInUseOutput> {
     return this.bookingService.createInUse(createInUseInput, user);
+  }
+
+  @Cron('0 */10 * * * *')
+  checkInUse() {
+    return this.bookingService.checkInUse();
   }
 }

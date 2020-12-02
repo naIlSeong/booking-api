@@ -12,6 +12,7 @@ import { Booking } from './booking/entity/booking.entity';
 import { Place } from './place/entity/place.entity';
 import { PlaceModule } from './place/place.module';
 import { PlaceLocation } from './place/entity/location.entity';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
@@ -48,6 +49,7 @@ import { PlaceLocation } from './place/entity/location.entity';
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,
     }),
+    ScheduleModule.forRoot(),
     AuthModule,
     UserModule,
     BookingModule,

@@ -49,6 +49,10 @@ export class Booking extends CoreEntity {
   @Column()
   endAt: Date;
 
+  @Field((type) => Boolean)
+  @Column({ default: false })
+  inUse: boolean;
+
   @BeforeInsert()
   @BeforeUpdate()
   checkDate(): void {

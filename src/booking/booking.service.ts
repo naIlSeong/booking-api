@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Place } from 'src/place/entity/place.entity';
 import { User } from 'src/user/entity/user.entity';
@@ -208,6 +208,12 @@ export class BookingService {
           error: "You can't do this",
         };
       }
+      if (booking.inUse === true) {
+        return {
+          ok: false,
+          error: "You can't do this in use",
+        };
+      }
       const participant = await this.userRepo.findOne({ id: participantId });
       if (!participant) {
         return {
@@ -280,6 +286,12 @@ export class BookingService {
         return {
           ok: false,
           error: "You can't do this",
+        };
+      }
+      if (booking.inUse === true) {
+        return {
+          ok: false,
+          error: "You can't do this in use",
         };
       }
 
@@ -404,6 +416,7 @@ export class BookingService {
           endAt,
           place,
           representative: user,
+          inUse: true,
         }),
       );
 
@@ -415,6 +428,35 @@ export class BookingService {
         ok: false,
         error: 'Unexpected Error',
       };
+    }
+  }
+
+  async checkInUse(): Promise<void> {
+    try {
+      const now = new Date();
+      const nowInUse = await this.bookingRepo.find({
+        startAt: LessThan(now),
+        endAt: MoreThan(now),
+      });
+      nowInUse.forEach(async (booking) => {
+        if (booking.inUse === false) {
+          booking.inUse = true;
+          await this.bookingRepo.save(booking);
+        }
+      });
+
+      const finishedInUse = await this.bookingRepo.find({
+        endAt: LessThan(now),
+      });
+      finishedInUse.forEach(async (booking) => {
+        if (booking.inUse === true) {
+          booking.inUse = false;
+          await this.bookingRepo.save(booking);
+        }
+      });
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException();
     }
   }
 }
