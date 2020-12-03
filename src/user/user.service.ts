@@ -8,39 +8,43 @@ import { JwtService } from 'src/jwt/jwt.service';
 import { DeleteUserInput, DeleteUserOutput } from './dto/delete-user.dto';
 import { EditUserInput, EditUserOutput } from './dto/edit-user.dto';
 import { GetUserInput, GetUserOutput } from './dto/get-user.dto';
+import { Team } from 'src/team/entity/team.entity';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
+    @InjectRepository(Team) private readonly teamRepo: Repository<Team>,
     private readonly jwtService: JwtService,
   ) {}
 
-  async createUser(
-    createUserInput: CreateUserInput,
-  ): Promise<CreateUserOutput> {
+  async createUser({
+    studentId,
+    username,
+    password,
+  }: CreateUserInput): Promise<CreateUserOutput> {
     try {
-      const existUsername = await this.userRepo.findOne({
-        username: createUserInput.username,
-      });
+      const existUsername = await this.userRepo.findOne({ username });
       if (existUsername) {
         return {
           ok: false,
           error: 'This username is already in use',
         };
       }
-      if (createUserInput.studentId) {
-        const existStudentId = await this.userRepo.findOne({
-          studentId: createUserInput.studentId,
-        });
+      const user = this.userRepo.create({ username, password });
+
+      if (studentId) {
+        const existStudentId = await this.userRepo.findOne({ studentId });
         if (existStudentId) {
           return {
             ok: false,
             error: 'This student ID is already in use',
           };
         }
+        user.studentId = studentId;
       }
-      await this.userRepo.save(this.userRepo.create(createUserInput));
+
+      await this.userRepo.save(user);
       return {
         ok: true,
       };
@@ -82,19 +86,27 @@ export class UserService {
   }
 
   async findById(userId: number): Promise<User> {
-    return this.userRepo.findOne({ id: userId });
+    try {
+      const user = await this.userRepo.findOne({ id: userId });
+      if (!user) {
+        throw Error();
+      }
+      return user;
+    } catch (error) {
+      console.log(error);
+    }
   }
 
-  async deleteUser({ id }: DeleteUserInput): Promise<DeleteUserOutput> {
+  async deleteUser({ id: userId }: DeleteUserInput): Promise<DeleteUserOutput> {
     try {
-      const user = await this.userRepo.findOne({ id });
+      const user = await this.userRepo.findOne({ id: userId });
       if (!user) {
         return {
           ok: false,
           error: 'User not found',
         };
       }
-      await this.userRepo.delete({ id });
+      await this.userRepo.delete({ id: userId });
       return {
         ok: true,
       };
@@ -106,9 +118,8 @@ export class UserService {
     }
   }
 
-  // Todo: Team
   async editUser(
-    { username, password }: EditUserInput,
+    { username, password, teamId }: EditUserInput,
     user: User,
   ): Promise<EditUserOutput> {
     try {
@@ -117,6 +128,13 @@ export class UserService {
           return {
             ok: false,
             error: 'Same Username',
+          };
+        }
+        const exist = await this.userRepo.findOne({ username });
+        if (exist) {
+          return {
+            ok: false,
+            error: 'Already username exist',
           };
         }
         user.username = username;
@@ -131,6 +149,23 @@ export class UserService {
           };
         }
         user.password = password;
+      }
+
+      if (teamId) {
+        if (user.teamId === teamId) {
+          return {
+            ok: false,
+            error: 'Same Team',
+          };
+        }
+        const team = await this.teamRepo.findOne({ id: teamId });
+        if (!team) {
+          return {
+            ok: false,
+            error: 'Team not found',
+          };
+        }
+        user.team = team;
       }
 
       await this.userRepo.save(user);
