@@ -181,9 +181,41 @@ describe('UserService', () => {
   });
 
   describe('deleteUser', () => {
-    it.todo('should fail if user not found');
-    it.todo('should delete user');
-    it.todo('should fail on exception');
+    const deleteUserArgs = {
+      id: 1,
+    };
+
+    it('should fail if user not found', async () => {
+      userRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.deleteUser(deleteUserArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'User not found',
+      });
+    });
+
+    it('should delete user', async () => {
+      userRepo.findOne.mockResolvedValue(deleteUserArgs);
+
+      const result = await service.deleteUser(deleteUserArgs);
+      expect(userRepo.findOne).toBeCalledTimes(1);
+      expect(userRepo.delete).toBeCalledWith(deleteUserArgs);
+      expect(userRepo.delete).toBeCalledTimes(1);
+      expect(result).toEqual({
+        ok: true,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      userRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.deleteUser(deleteUserArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('editUser', () => {
@@ -201,8 +233,38 @@ describe('UserService', () => {
   });
 
   describe('getUser', () => {
-    it.todo('should fail if user not found');
-    it.todo('should find one user');
-    it.todo('should fail on exception');
+    const getUserArgs = { userId: 1 };
+
+    it('should fail if user not found', async () => {
+      userRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.getUser(getUserArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'User not found',
+      });
+    });
+
+    it('should find one user', async () => {
+      const user = userRepo.findOne.mockResolvedValue({
+        id: getUserArgs.userId,
+      });
+
+      const result = await service.getUser(getUserArgs);
+      expect(result).toEqual({
+        ok: true,
+        user: expect.any(Object),
+      });
+    });
+
+    it('should fail on exception', async () => {
+      userRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.getUser(getUserArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 });
