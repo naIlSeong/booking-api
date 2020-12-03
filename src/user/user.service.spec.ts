@@ -180,12 +180,6 @@ describe('UserService', () => {
     });
   });
 
-  describe('findById', () => {
-    it.todo('should fail if user not found');
-    it.todo('should find user');
-    it.todo('should fail on exception');
-  });
-
   describe('deleteUser', () => {
     it.todo('should fail if user not found');
     it.todo('should delete user');

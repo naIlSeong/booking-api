@@ -85,18 +85,6 @@ export class UserService {
     }
   }
 
-  async findById(userId: number): Promise<User> {
-    try {
-      const user = await this.userRepo.findOne({ id: userId });
-      if (!user) {
-        throw Error();
-      }
-      return user;
-    } catch (error) {
-      console.log(error);
-    }
-  }
-
   async deleteUser({ id: userId }: DeleteUserInput): Promise<DeleteUserOutput> {
     try {
       const user = await this.userRepo.findOne({ id: userId });
