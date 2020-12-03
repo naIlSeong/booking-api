@@ -62,7 +62,7 @@ export class UserService {
       if (!user) {
         return {
           ok: false,
-          error: 'User not exist',
+          error: 'User not found',
         };
       }
       const isMatch = await user.checkPassword(password);
