@@ -1,3 +1,4 @@
+import { boolean } from '@hapi/joi';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { JwtService } from 'src/jwt/jwt.service';
@@ -5,6 +6,8 @@ import { Team } from 'src/team/entity/team.entity';
 import { Repository } from 'typeorm';
 import { User } from './entity/user.entity';
 import { UserService } from './user.service';
+
+const TOKEN = 'MOCK_TOKEN';
 
 const mockRepository = () => ({
   findOne: jest.fn(),
@@ -14,7 +17,7 @@ const mockRepository = () => ({
 });
 
 const mockJwtService = () => ({
-  sign: jest.fn(),
+  sign: jest.fn(() => TOKEN),
 });
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
@@ -122,11 +125,59 @@ describe('UserService', () => {
   });
 
   describe('login', () => {
-    it.todo('shoudl fail if user not found by username');
-    it.todo('should fail on wrong password');
-    it.todo('should login and get token');
-    it.todo('should fail on exception');
-    it.todo('should fail on exception');
+    const loginArgs = {
+      username: 'mockUsername',
+      password: 'mockPassword',
+    };
+
+    it('shoudl fail if user not found by username', async () => {
+      userRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.login(loginArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'User not found',
+      });
+    });
+
+    it('should fail on wrong password', async () => {
+      const wrongLoginArgs = {
+        username: loginArgs.username,
+        checkPassword: jest.fn(() => Promise.resolve(false)),
+      };
+      userRepo.findOne.mockResolvedValue(wrongLoginArgs);
+
+      const result = await service.login(loginArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Wrong password',
+      });
+    });
+
+    it('should login and get token', async () => {
+      const validLoginArgs = {
+        username: loginArgs.username,
+        password: loginArgs.password,
+        checkPassword: jest.fn(() => Promise.resolve(true)),
+      };
+      userRepo.findOne.mockResolvedValue(validLoginArgs);
+
+      const result = await service.login(loginArgs);
+      expect(result).toEqual({
+        ok: true,
+        token: TOKEN,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      userRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.login(loginArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('findById', () => {
