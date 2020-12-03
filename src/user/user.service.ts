@@ -28,7 +28,7 @@ export class UserService {
       if (existUsername) {
         return {
           ok: false,
-          error: 'This username is already in use',
+          error: 'Already exist username',
         };
       }
       const user = this.userRepo.create({ username, password });
@@ -38,7 +38,7 @@ export class UserService {
         if (existStudentId) {
           return {
             ok: false,
-            error: 'This student ID is already in use',
+            error: 'Already exist studentID',
           };
         }
         user.studentId = studentId;

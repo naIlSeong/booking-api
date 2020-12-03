@@ -8,6 +8,7 @@ import { UserService } from './user.service';
 
 const mockRepository = () => ({
   findOne: jest.fn(),
+  create: jest.fn(),
   save: jest.fn(),
   delete: jest.fn(),
 });
@@ -54,10 +55,70 @@ describe('UserService', () => {
   });
 
   describe('createUser', () => {
-    it.todo('shoudl fail on exist username');
-    it.todo('shoudl fail on exist studentId');
-    it.todo('should create new user');
-    it.todo('should fail on exception');
+    const createUserArgs = {
+      username: 'mockUsername',
+      password: 'mockPassword',
+      studentId: 123456,
+    };
+
+    it('shoudl fail on exist username', async () => {
+      userRepo.findOne.mockResolvedValue({
+        id: 1,
+        username: createUserArgs.username,
+      });
+
+      const result = await service.createUser(createUserArgs);
+      expect(userRepo.findOne).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already exist username',
+      });
+    });
+
+    it('shoudl fail on exist studentId', async () => {
+      userRepo.findOne.mockResolvedValueOnce(null);
+      userRepo.create.mockReturnValue({
+        username: createUserArgs.username,
+        studentId: createUserArgs.studentId,
+      });
+      userRepo.findOne.mockResolvedValueOnce({
+        id: 1,
+        username: 'any',
+        studentId: createUserArgs.studentId,
+      });
+
+      const result = await service.createUser(createUserArgs);
+      expect(userRepo.findOne).toHaveBeenCalledTimes(2);
+      expect(userRepo.create).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already exist studentID',
+      });
+    });
+
+    it('should create new user', async () => {
+      userRepo.findOne.mockResolvedValue(null);
+      userRepo.create.mockReturnValue(createUserArgs);
+      userRepo.save.mockResolvedValue(createUserArgs);
+
+      const result = await service.createUser(createUserArgs);
+      expect(userRepo.findOne).toHaveBeenCalledTimes(2);
+      expect(userRepo.create).toHaveBeenCalledTimes(1);
+      expect(userRepo.save).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({
+        ok: true,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      userRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.createUser(createUserArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('login', () => {
