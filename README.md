@@ -7,7 +7,7 @@ Sports facility reservation service
 ### TODO 📝
 
 ~~User 🏃‍♂️~~
-Booking ⏰
+~~Booking ⏰~~
 ~~Place 🏟~~
 
 - [x] DB Configuration
@@ -30,3 +30,17 @@ Booking ⏰
   - [x] get Teams
   - [x] Delete team
 - [ ] Verify Student Email
+      <br>
+- [ ] Refactoring
+- [ ] Unit Test
+  - User
+  - Team
+  - Place
+  - JWT
+  - Booking
+- [ ] E2E Test
+  - User
+  - Team
+  - Place
+  - JWT
+  - Booking
