@@ -121,7 +121,7 @@ export class TeamService {
     } catch (error) {
       return {
         ok: false,
-        error,
+        error: 'Unexpected Error',
       };
     }
   }
