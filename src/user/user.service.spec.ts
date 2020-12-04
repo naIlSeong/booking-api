@@ -219,17 +219,159 @@ describe('UserService', () => {
   });
 
   describe('editUser', () => {
-    it.todo('should fail on same username');
-    it.todo('should fail if already username exist');
-    it.todo('should change username');
+    const mockUser = {
+      id: 1,
+      username: 'mockUser',
+      password: 'mockPassword',
+      teamId: 1,
+    };
+    const editUserArgs = {
+      username: 'newUsername',
+      password: 'newPassword',
+      teamId: 2,
+    };
 
-    it.todo('should fail on same password');
-    it.todo('should change password');
+    it('should fail if user not found', async () => {
+      userRepo.findOne.mockResolvedValue(null);
 
-    it.todo('should fail on same team');
-    it.todo('should change team');
+      const result = await service.editUser(editUserArgs, mockUser.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'User not found',
+      });
+    });
 
-    it.todo('should fail on exception');
+    it('should fail on same username', async () => {
+      userRepo.findOne.mockResolvedValue({
+        id: mockUser.id,
+        username: editUserArgs.username,
+      });
+
+      const result = await service.editUser(editUserArgs, mockUser.id);
+      expect(userRepo.findOne).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Same Username',
+      });
+    });
+
+    it('should fail if already username exist', async () => {
+      userRepo.findOne.mockResolvedValueOnce(mockUser);
+      userRepo.findOne.mockResolvedValue({
+        id: 2,
+        username: editUserArgs.username,
+      });
+
+      const result = await service.editUser(editUserArgs, mockUser.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already username exist',
+      });
+    });
+
+    it('should change username', async () => {
+      userRepo.findOne.mockResolvedValueOnce(mockUser);
+      userRepo.findOne.mockResolvedValueOnce(null);
+
+      const result = await service.editUser(
+        { username: editUserArgs.username },
+        mockUser.id,
+      );
+      expect(result).toEqual({
+        ok: true,
+      });
+    });
+
+    it('should fail on same password', async () => {
+      const mockUserPassword = {
+        ...mockUser,
+        checkPassword: jest.fn(() => Promise.resolve(true)),
+      };
+      userRepo.findOne.mockResolvedValue(mockUserPassword);
+
+      const result = await service.editUser(
+        { password: editUserArgs.password },
+        mockUser.id,
+      );
+      expect(result).toEqual({
+        ok: false,
+        error: 'Same Password',
+      });
+    });
+
+    it('should change password', async () => {
+      const mockUserPassword = {
+        ...mockUser,
+        checkPassword: jest.fn(() => Promise.resolve(false)),
+      };
+      userRepo.findOne.mockResolvedValue(mockUserPassword);
+
+      const result = await service.editUser(
+        { password: editUserArgs.password },
+        mockUser.id,
+      );
+      expect(userRepo.findOne).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({
+        ok: true,
+      });
+    });
+
+    it('should fail on same team', async () => {
+      userRepo.findOne.mockResolvedValue(mockUser);
+      teamRepo.findOne.mockResolvedValue({
+        id: mockUser.teamId,
+      });
+
+      const result = await service.editUser(
+        { teamId: mockUser.teamId },
+        mockUser.id,
+      );
+      expect(result).toEqual({
+        ok: false,
+        error: 'Same Team',
+      });
+    });
+
+    it('should fail if team not found', async () => {
+      userRepo.findOne.mockResolvedValue(mockUser);
+      teamRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.editUser(
+        { teamId: editUserArgs.teamId },
+        mockUser.id,
+      );
+      expect(userRepo.findOne).toHaveBeenCalledTimes(1);
+      expect(teamRepo.findOne).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Team not found',
+      });
+    });
+
+    it('should change team', async () => {
+      userRepo.findOne.mockResolvedValueOnce(mockUser);
+      teamRepo.findOne.mockResolvedValueOnce({
+        id: editUserArgs.teamId,
+      });
+
+      const result = await service.editUser(
+        { teamId: editUserArgs.teamId },
+        mockUser.id,
+      );
+      expect(result).toEqual({
+        ok: true,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      userRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.editUser(editUserArgs, mockUser.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('getUser', () => {

@@ -33,7 +33,7 @@ Sports facility reservation service
       <br>
 - [ ] Refactoring
 - [ ] Unit Test
-  - User
+  - [x] User
   - Team
   - Place
   - JWT
