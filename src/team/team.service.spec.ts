@@ -5,6 +5,8 @@ import { Repository } from 'typeorm';
 import { Team } from './entity/team.entity';
 import { TeamService } from './team.service';
 
+const userId = 1;
+
 const mockRepository = {
   findOne: jest.fn(),
   create: jest.fn(),
@@ -45,13 +47,77 @@ describe('TeamService', () => {
   });
 
   describe('createTeam', () => {
-    it.todo('should fail on exist team name');
-    it.todo('should fail if already has team');
-    it.todo('should create team');
-    it.todo('should fail on exception');
+    const createTeamArgs = {
+      teamName: 'mockTeamName',
+    };
+
+    it('should fail if user not found', async () => {
+      userRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.createTeam(createTeamArgs, userId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'User not found',
+      });
+    });
+
+    it('should fail on exist team name', async () => {
+      userRepo.findOne.mockResolvedValueOnce({ id: userId });
+      teamRepo.findOne.mockResolvedValueOnce({
+        teamName: createTeamArgs.teamName,
+      });
+
+      const result = await service.createTeam(createTeamArgs, userId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already team exist',
+      });
+    });
+
+    it('should fail if already has team', async () => {
+      userRepo.findOne.mockResolvedValueOnce({ id: userId, teamId: 1 });
+      teamRepo.findOne.mockResolvedValueOnce(null);
+
+      const result = await service.createTeam(createTeamArgs, userId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already has team',
+      });
+    });
+
+    it('should create team', async () => {
+      userRepo.findOne.mockResolvedValueOnce({ id: userId });
+      teamRepo.findOne.mockResolvedValueOnce(null);
+      teamRepo.create.mockReturnValue({
+        teamName: createTeamArgs.teamName,
+        members: [{ id: userId, teamId: 1 }],
+      });
+      teamRepo.save.mockResolvedValue({
+        teamName: createTeamArgs.teamName,
+        members: [{ id: userId, teamId: 1 }],
+      });
+
+      const result = await service.createTeam(createTeamArgs, userId);
+      expect(result).toEqual({
+        ok: true,
+      });
+      expect(teamRepo.save).toBeCalledTimes(1);
+      expect(teamRepo.create).toBeCalledTimes(1);
+    });
+
+    it('should fail on exception', async () => {
+      userRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.createTeam(createTeamArgs, userId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('registerMember', () => {
+    it.todo('should fail if user not found');
     it.todo('should fail if has not team');
     it.todo('should fail if team not found');
     it.todo("should fail if not user's team");
@@ -62,6 +128,7 @@ describe('TeamService', () => {
   });
 
   describe('editTeam', () => {
+    it.todo('should fail if user not found');
     it.todo('should fail if has not team');
     it.todo('should fail if team not found');
     it.todo("should fail if not user's team");
@@ -82,6 +149,7 @@ describe('TeamService', () => {
   });
 
   describe('deleteTeam', () => {
+    it.todo('should fail if user not found');
     it.todo('should fail if has not team');
     it.todo('should fail if team not found');
     it.todo("should fail if not user's team");

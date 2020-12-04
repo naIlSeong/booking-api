@@ -22,9 +22,16 @@ export class TeamService {
 
   async createTeam(
     { teamName }: CreateTeamInput,
-    user: User,
+    userId: number,
   ): Promise<CreateTeamOutput> {
     try {
+      const user = await this.userRepo.findOne({ id: userId });
+      if (!user) {
+        return {
+          ok: false,
+          error: 'User not found',
+        };
+      }
       const exist = await this.teamRepo.findOne({ teamName });
       if (exist) {
         return {
@@ -57,9 +64,16 @@ export class TeamService {
 
   async registerMember(
     { memberId }: RegisterMemberInput,
-    user: User,
+    userId: number,
   ): Promise<RegisterMemberOutput> {
     try {
+      const user = await this.userRepo.findOne({ id: userId });
+      if (!user) {
+        return {
+          ok: false,
+          error: 'User not found',
+        };
+      }
       if (!user.teamId) {
         return {
           ok: false,
@@ -114,9 +128,16 @@ export class TeamService {
 
   async editTeam(
     { teamId, teamName }: EditTeamInput,
-    user: User,
+    userId: number,
   ): Promise<EditTeamOutput> {
     try {
+      const user = await this.userRepo.findOne({ id: userId });
+      if (!user) {
+        return {
+          ok: false,
+          error: 'User not found',
+        };
+      }
       if (!user.teamId) {
         return {
           ok: false,
@@ -199,9 +220,16 @@ export class TeamService {
 
   async deleteTeam(
     { teamId }: DeleteTeamInput,
-    user: User,
+    userId: number,
   ): Promise<DeleteTeamOutput> {
     try {
+      const user = await this.userRepo.findOne({ id: userId });
+      if (!user) {
+        return {
+          ok: false,
+          error: 'User not found',
+        };
+      }
       if (!user.teamId) {
         return {
           ok: false,

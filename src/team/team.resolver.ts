@@ -24,7 +24,7 @@ export class TeamResolver {
     @Args('input') createTeamInput: CreateTeamInput,
     @AuthUser() user: User,
   ): Promise<CreateTeamOutput> {
-    return this.teamService.createTeam(createTeamInput, user);
+    return this.teamService.createTeam(createTeamInput, user.id);
   }
 
   @Mutation((returns) => RegisterMemberOutput)
@@ -33,7 +33,7 @@ export class TeamResolver {
     @Args('input') registerMemberInput: RegisterMemberInput,
     @AuthUser() user: User,
   ): Promise<RegisterMemberOutput> {
-    return this.teamService.registerMember(registerMemberInput, user);
+    return this.teamService.registerMember(registerMemberInput, user.id);
   }
 
   @Mutation((returns) => EditTeamOutput)
@@ -42,7 +42,7 @@ export class TeamResolver {
     @Args('input') editTeamInput: EditTeamInput,
     @AuthUser() user: User,
   ): Promise<EditTeamOutput> {
-    return this.teamService.editTeam(editTeamInput, user);
+    return this.teamService.editTeam(editTeamInput, user.id);
   }
 
   @Query((returns) => TeamDetailOutput)
@@ -65,6 +65,6 @@ export class TeamResolver {
     @Args('input') deleteTeamInput: DeleteTeamInput,
     @AuthUser() user: User,
   ): Promise<DeleteTeamOutput> {
-    return this.teamService.deleteTeam(deleteTeamInput, user);
+    return this.teamService.deleteTeam(deleteTeamInput, user.id);
   }
 }
