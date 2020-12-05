@@ -249,13 +249,111 @@ describe('TeamService', () => {
   });
 
   describe('editTeam', () => {
-    it.todo('should fail if user not found');
-    it.todo('should fail if has not team');
-    it.todo('should fail if team not found');
-    it.todo("should fail if not user's team");
-    it.todo('should fail on exist team name');
-    it.todo('should change team name');
-    it.todo('should fail on exception');
+    const editTeamArgs = {
+      teamId: 1,
+      teamName: 'mockTeamName',
+    };
+
+    it('should fail if user not found', async () => {
+      userRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.editTeam(editTeamArgs, userId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'User not found',
+      });
+    });
+
+    it('should fail if has not team', async () => {
+      userRepo.findOne.mockResolvedValue({
+        id: userId,
+      });
+
+      const result = await service.editTeam(editTeamArgs, userId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Not have a team',
+      });
+    });
+
+    it('should fail if team not found', async () => {
+      userRepo.findOne.mockResolvedValueOnce({
+        id: userId,
+        teamId: editTeamArgs.teamId,
+      });
+      teamRepo.findOne.mockResolvedValueOnce(null);
+
+      const result = await service.editTeam(editTeamArgs, userId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Team not found',
+      });
+    });
+
+    it("should fail if not user's team", async () => {
+      userRepo.findOne.mockResolvedValueOnce({
+        id: userId,
+        teamId: editTeamArgs.teamId,
+      });
+      teamRepo.findOne.mockResolvedValueOnce({
+        id: 2,
+      });
+
+      const result = await service.editTeam(editTeamArgs, userId);
+      expect(result).toEqual({
+        ok: false,
+        error: "You can't do this",
+      });
+    });
+
+    it('should fail on exist team name', async () => {
+      userRepo.findOne.mockResolvedValueOnce({
+        id: userId,
+        teamId: editTeamArgs.teamId,
+      });
+      teamRepo.findOne.mockResolvedValueOnce({
+        id: editTeamArgs.teamId,
+      });
+      teamRepo.findOne.mockResolvedValueOnce({
+        teamName: editTeamArgs.teamName,
+      });
+
+      const result = await service.editTeam(editTeamArgs, userId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already team exist',
+      });
+    });
+
+    it('should change team name', async () => {
+      userRepo.findOne.mockResolvedValueOnce({
+        id: userId,
+        teamId: editTeamArgs.teamId,
+      });
+      teamRepo.findOne.mockResolvedValueOnce({
+        id: editTeamArgs.teamId,
+      });
+      teamRepo.findOne.mockResolvedValueOnce(null);
+      teamRepo.save.mockReturnValue({
+        id: editTeamArgs.teamId,
+        teamName: editTeamArgs.teamName,
+      });
+
+      const result = await service.editTeam(editTeamArgs, userId);
+      expect(result).toEqual({
+        ok: true,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      userRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.editTeam(editTeamArgs, userId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('teamDetail', () => {
