@@ -34,7 +34,7 @@ Sports facility reservation service
 - [ ] Refactoring
 - [ ] Unit Test
   - [x] User
-  - Team
+  - [x] Team
   - Place
   - JWT
   - Booking
