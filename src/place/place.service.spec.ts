@@ -103,9 +103,46 @@ describe('PlaceService', () => {
   });
 
   describe('toggleIsAvailable', () => {
-    it.todo('should fail if place not found');
-    it.todo('should success to toggle isAvailable');
-    it.todo('should fail on exception');
+    const toggleIsAvailableArgs = {
+      id: 1,
+    };
+
+    it('should fail if place not found', async () => {
+      placeRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.toggleIsAvailable(toggleIsAvailableArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Place not found',
+      });
+    });
+
+    it('should success to toggle isAvailable', async () => {
+      placeRepo.findOne.mockResolvedValue({
+        id: toggleIsAvailableArgs.id,
+        isAvailable: false,
+      });
+
+      const result = await service.toggleIsAvailable(toggleIsAvailableArgs);
+      expect(result).toEqual({
+        ok: true,
+        isAvailable: true,
+      });
+      expect(placeRepo.save).toBeCalledWith({
+        id: toggleIsAvailableArgs.id,
+        isAvailable: true,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      placeRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.toggleIsAvailable(toggleIsAvailableArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('editPlace', () => {
