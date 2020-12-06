@@ -357,9 +357,41 @@ describe('TeamService', () => {
   });
 
   describe('teamDetail', () => {
-    it.todo('should fail if team not found');
-    it.todo('should find one team');
-    it.todo('should fail on exception');
+    const teamDetailArgs = {
+      teamId: 1,
+    };
+
+    it('should fail if team not found', async () => {
+      teamRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.teamDetail(teamDetailArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Team not found',
+      });
+    });
+
+    it('should find one team', async () => {
+      teamRepo.findOne.mockResolvedValue({
+        id: teamDetailArgs.teamId,
+      });
+
+      const result = await service.teamDetail(teamDetailArgs);
+      expect(result).toEqual({
+        ok: true,
+        team: expect.any(Object),
+      });
+    });
+
+    it('should fail on exception', async () => {
+      teamRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.teamDetail(teamDetailArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('getTeams', () => {
