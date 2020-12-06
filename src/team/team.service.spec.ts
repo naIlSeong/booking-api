@@ -1,3 +1,4 @@
+import { any } from '@hapi/joi';
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
 import { User } from 'src/user/entity/user.entity';
@@ -395,8 +396,29 @@ describe('TeamService', () => {
   });
 
   describe('getTeams', () => {
-    it.todo('should find all teams');
-    it.todo('should fail on exception');
+    it('should find all teams', async () => {
+      teamRepo.find.mockResolvedValue([
+        {
+          teamId: 1,
+        },
+      ]);
+
+      const result = await service.getTeams();
+      expect(result).toEqual({
+        ok: true,
+        teams: [expect.any(Object)],
+      });
+    });
+
+    it('should fail on exception', async () => {
+      teamRepo.find.mockRejectedValue(new Error());
+
+      const result = await service.getTeams();
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('deleteTeam', () => {
