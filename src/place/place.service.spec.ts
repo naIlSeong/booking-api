@@ -203,12 +203,94 @@ describe('PlaceService', () => {
   });
 
   describe('deletePlace', () => {
-    it.todo('should fail if location not found');
-    it.todo('should fail if place not found');
-    it.todo('should fail place in use');
-    it.todo('should fail place is available');
-    it.todo('should success to delete a place');
-    it.todo('should fail on exception');
+    const deletePlaceArgs = {
+      placeId: 1,
+      locationId: 1,
+    };
+
+    it('should fail if location not found', async () => {
+      locationRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.deletePlace(deletePlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Location not found',
+      });
+    });
+
+    it('should fail if place not found', async () => {
+      locationRepo.findOne.mockResolvedValueOnce({
+        id: deletePlaceArgs.locationId,
+      });
+      placeRepo.findOne.mockResolvedValueOnce(null);
+
+      const result = await service.deletePlace(deletePlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Place not found',
+      });
+    });
+
+    it('should fail if place in use', async () => {
+      locationRepo.findOne.mockResolvedValueOnce({
+        id: deletePlaceArgs.locationId,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: deletePlaceArgs.placeId,
+        inUse: true,
+        isAvailable: false,
+      });
+
+      const result = await service.deletePlace(deletePlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: "Check 'inUse' and 'isAvailable' is false",
+      });
+    });
+
+    it('should fail place is available', async () => {
+      locationRepo.findOne.mockResolvedValueOnce({
+        id: deletePlaceArgs.locationId,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: deletePlaceArgs.placeId,
+        inUse: false,
+        isAvailable: true,
+      });
+
+      const result = await service.deletePlace(deletePlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: "Check 'inUse' and 'isAvailable' is false",
+      });
+    });
+
+    it('should success to delete a place', async () => {
+      locationRepo.findOne.mockResolvedValueOnce({
+        id: deletePlaceArgs.locationId,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: deletePlaceArgs.placeId,
+        inUse: false,
+        isAvailable: false,
+      });
+
+      const result = await service.deletePlace(deletePlaceArgs);
+      expect(result).toEqual({
+        ok: true,
+      });
+      expect(placeRepo.delete).toBeCalled();
+    });
+
+    it('should fail on exception', async () => {
+      locationRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.deletePlace(deletePlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('placeDetail', () => {
