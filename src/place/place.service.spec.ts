@@ -373,8 +373,40 @@ describe('PlaceService', () => {
   });
 
   describe('locationDetail', () => {
-    it.todo('should fail if location not found');
-    it.todo('should success to find a location');
-    it.todo('should fail on exception');
+    const locationDetailArgs = {
+      locationId: 1,
+    };
+
+    it('should fail if location not found', async () => {
+      locationRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.locationDetail(locationDetailArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Location not found',
+      });
+    });
+
+    it('should success to find a location', async () => {
+      locationRepo.findOne.mockResolvedValue({
+        id: locationDetailArgs.locationId,
+      });
+
+      const result = await service.locationDetail(locationDetailArgs);
+      expect(result).toEqual({
+        ok: true,
+        location: { id: locationDetailArgs.locationId },
+      });
+    });
+
+    it('should fail on exception', async () => {
+      locationRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.locationDetail(locationDetailArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 });
