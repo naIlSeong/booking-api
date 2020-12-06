@@ -294,15 +294,82 @@ describe('PlaceService', () => {
   });
 
   describe('placeDetail', () => {
-    it.todo('should fail if place not found');
-    it.todo('should success to find a place');
-    it.todo('should fail on exception');
+    const placeDetailArgs = {
+      placeId: 1,
+    };
+
+    it('should fail if place not found', async () => {
+      placeRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.placeDetail(placeDetailArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Place not found',
+      });
+    });
+
+    it('should success to find a place', async () => {
+      placeRepo.findOne.mockResolvedValue({
+        place: {
+          id: placeDetailArgs.placeId,
+        },
+      });
+
+      const result = await service.placeDetail(placeDetailArgs);
+      expect(result).toEqual({
+        ok: true,
+        place: expect.any(Object),
+      });
+    });
+
+    it('should fail on exception', async () => {
+      placeRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.placeDetail(placeDetailArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('createLocation', () => {
-    it.todo('should fail if already location exist');
-    it.todo('should success to create a location');
-    it.todo('should fail on exception');
+    const createLocationArgs = {
+      locationName: 'mockLocationName',
+    };
+
+    it('should fail if already location exist', async () => {
+      locationRepo.findOne.mockResolvedValue({
+        id: 1,
+      });
+
+      const result = await service.createLocation(createLocationArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already location exist',
+      });
+    });
+
+    it('should success to create a location', async () => {
+      locationRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.createLocation(createLocationArgs);
+      expect(result).toEqual({
+        ok: true,
+      });
+      expect(locationRepo.create).toBeCalled();
+      expect(locationRepo.save).toBeCalled();
+    });
+
+    it('should fail on exception', async () => {
+      locationRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.createLocation(createLocationArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('locationDetail', () => {
