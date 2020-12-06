@@ -146,10 +146,60 @@ describe('PlaceService', () => {
   });
 
   describe('editPlace', () => {
-    it.todo('should fail if location not found');
-    it.todo('should fail if place not found');
-    it.todo('should success to edit place');
-    it.todo('should fail on exception');
+    const editPlaceArgs = {
+      placeName: 'mockPlaceName',
+      inUse: true,
+      locationId: 1,
+      placeId: 1,
+    };
+
+    it('should fail if location not found', async () => {
+      locationRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.editPlace(editPlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Location not found',
+      });
+    });
+
+    it('should fail if place not found', async () => {
+      locationRepo.findOne.mockResolvedValueOnce({
+        id: editPlaceArgs.locationId,
+      });
+      placeRepo.findOne.mockResolvedValueOnce(null);
+
+      const result = await service.editPlace(editPlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Place not found',
+      });
+    });
+
+    it('should success to edit place', async () => {
+      locationRepo.findOne.mockResolvedValueOnce({
+        id: editPlaceArgs.locationId,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: editPlaceArgs.placeId,
+      });
+
+      const result = await service.editPlace(editPlaceArgs);
+      expect(result).toEqual({
+        ok: true,
+      });
+      expect(placeRepo.save).toBeCalledWith(expect.any(Object));
+    });
+
+    it('should fail on exception', async () => {
+      locationRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.editPlace(editPlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
   });
 
   describe('deletePlace', () => {
