@@ -2,7 +2,7 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { AuthUser } from 'src/auth/auth.decorator';
 import { Role } from 'src/auth/role.decorator';
 import { CreateUserInput, CreateUserOutput } from './dto/create-user.dto';
-import { DeleteUserInput, DeleteUserOutput } from './dto/delete-user.dto';
+import { DeleteUserOutput } from './dto/delete-user.dto';
 import { EditUserInput, EditUserOutput } from './dto/edit-user.dto';
 import { GetUserInput, GetUserOutput } from './dto/get-user.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
@@ -32,11 +32,9 @@ export class UserResolver {
   }
 
   @Mutation((returns) => DeleteUserOutput)
-  @Role(['Admin'])
-  deleteUser(
-    @Args('input') deleteUserInput: DeleteUserInput,
-  ): Promise<DeleteUserOutput> {
-    return this.userService.deleteUser(deleteUserInput);
+  @Role(['User'])
+  deleteUser(@AuthUser() user: User): Promise<DeleteUserOutput> {
+    return this.userService.deleteUser(user.id);
   }
 
   @Mutation((returns) => EditUserOutput)

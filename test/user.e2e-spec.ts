@@ -439,5 +439,28 @@ describe('UserModule (e2e)', () => {
     });
   });
 
-  it.todo('deleteUser');
+  describe('deleteUser', () => {
+    it('Delete user', () => {
+      return privateTest(`
+          mutation {
+            deleteUser {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                deleteUser: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+  });
 });

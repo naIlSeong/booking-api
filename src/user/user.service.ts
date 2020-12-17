@@ -5,7 +5,7 @@ import { CreateUserInput, CreateUserOutput } from './dto/create-user.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
 import { User } from './entity/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
-import { DeleteUserInput, DeleteUserOutput } from './dto/delete-user.dto';
+import { DeleteUserOutput } from './dto/delete-user.dto';
 import { EditUserInput, EditUserOutput } from './dto/edit-user.dto';
 import { GetUserInput, GetUserOutput } from './dto/get-user.dto';
 import { Team } from 'src/team/entity/team.entity';
@@ -85,15 +85,9 @@ export class UserService {
     }
   }
 
-  async deleteUser({ id: userId }: DeleteUserInput): Promise<DeleteUserOutput> {
+  async deleteUser(userId: number): Promise<DeleteUserOutput> {
     try {
       const user = await this.userRepo.findOne({ id: userId });
-      if (!user) {
-        return {
-          ok: false,
-          error: 'User not found',
-        };
-      }
       await this.userRepo.delete({ id: userId });
       return {
         ok: true,
