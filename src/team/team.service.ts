@@ -26,17 +26,11 @@ export class TeamService {
   ): Promise<CreateTeamOutput> {
     try {
       const user = await this.userRepo.findOne({ id: userId });
-      if (!user) {
-        return {
-          ok: false,
-          error: 'User not found',
-        };
-      }
       const exist = await this.teamRepo.findOne({ teamName });
       if (exist) {
         return {
           ok: false,
-          error: 'Already team exist',
+          error: 'Already team name exist',
         };
       }
       if (user.teamId) {

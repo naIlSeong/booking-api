@@ -14,16 +14,25 @@ const member = {
   password: 'memberPassword',
 };
 
+const TEAM_NAME = 'teamName';
+const OTHER_TEAM_NAME = 'otherTeamName';
+
 describe('TeamModule (e2e)', () => {
   let app: INestApplication;
-  let jwtToken: string;
+  let representativeToken: string;
+  let memberToken: string;
 
   const publicTest = (query: string) =>
     request(app.getHttpServer()).post('/graphql').send({ query });
   const privateTest = (query: string) =>
     request(app.getHttpServer())
       .post('/graphql')
-      .set('x-jwt', jwtToken)
+      .set('x-jwt', representativeToken)
+      .send({ query });
+  const memberPrivateTest = (query: string) =>
+    request(app.getHttpServer())
+      .post('/graphql')
+      .set('x-jwt', memberToken)
       .send({ query });
 
   beforeAll(async () => {
@@ -77,7 +86,7 @@ describe('TeamModule (e2e)', () => {
               },
             },
           } = res;
-          jwtToken = token;
+          representativeToken = token;
         });
     });
 
@@ -94,9 +103,111 @@ describe('TeamModule (e2e)', () => {
         }
       `).expect(200);
     });
+
+    it('login member & save token', () => {
+      return publicTest(`
+              mutation {
+                  login(input: {
+                  username: "${member.username}"
+                  password: "${member.password}"
+                  }) {
+                  ok
+                  error
+                  token
+                  }
+              }
+          `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                login: { token },
+              },
+            },
+          } = res;
+          memberToken = token;
+        });
+    });
   });
 
-  it.todo('createTeam');
+  describe('createTeam', () => {
+    it('Create representative team', () => {
+      return privateTest(`
+        mutation {
+            createTeam(input: {
+              teamName: "${TEAM_NAME}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createTeam: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+
+    it('Error: Already team name exist', () => {
+      return memberPrivateTest(`
+        mutation {
+            createTeam(input: {
+              teamName: "${TEAM_NAME}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createTeam: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Already team name exist');
+        });
+    });
+
+    it('Error: Already has team', () => {
+      return privateTest(`
+        mutation {
+            createTeam(input: {
+              teamName: "${OTHER_TEAM_NAME}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createTeam: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Already has team');
+        });
+    });
+  });
+
   it.todo('registerMember');
   it.todo('editTeam');
   it.todo('teamDetail');
