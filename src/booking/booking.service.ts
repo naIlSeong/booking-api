@@ -417,6 +417,12 @@ export class BookingService {
           error: 'Place not found',
         };
       }
+      if (!place.isAvailable) {
+        return {
+          ok: false,
+          error: 'Place not available',
+        };
+      }
 
       const startAt: Date = new Date();
       const endAt: Date = new Date(startAt.getTime() + 3600000);

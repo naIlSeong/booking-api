@@ -60,16 +60,18 @@ export class User extends CoreEntity {
   @IsEnum(UserRole)
   role: UserRole;
 
-  @Field((type) => [Booking])
+  @Field((type) => [Booking], { nullable: true })
   @OneToMany((type) => Booking, (booking) => booking.representative, {
+    nullable: true,
     onDelete: 'CASCADE',
   })
-  bookings: Booking[];
+  bookings?: Booking[];
 
   @Field((type) => Team, { nullable: true })
   @ManyToOne((type) => Team, (team) => team.members, {
     nullable: true,
     onDelete: 'SET NULL',
+    eager: true,
   })
   team?: Team;
 
