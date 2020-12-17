@@ -15,6 +15,17 @@ const invalidUser = {
   password: 'invalidPassword',
 };
 
+const updatedUser = {
+  username: 'updatedUserName',
+  password: 'updatedPassword',
+};
+
+const otherUser = {
+  username: 'otherUsername',
+  password: 'otherPassword',
+  studentId: 654321,
+};
+
 describe('UserModule (e2e)', () => {
   let app: INestApplication;
   let jwtToken: string;
@@ -236,7 +247,197 @@ describe('UserModule (e2e)', () => {
     });
   });
 
-  it.todo('editUser');
-  it.todo('getUser');
+  describe('editUser', () => {
+    it('Error: Same Username', () => {
+      return privateTest(`
+        mutation {
+          editUser(input: {
+            username: "${user.username}"
+            password: "${updatedUser.password}"
+          }) {
+            ok
+            error
+          }
+        }
+      `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editUser: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Same Username');
+        });
+    });
+
+    it('Create other user', () => {
+      return publicTest(`
+            mutation {
+              createUser(input: {
+                username: "${otherUser.username}"
+                password: "${otherUser.password}"
+                studentId: ${otherUser.studentId}
+              }) {
+                ok
+                error
+              }
+            }
+        `).expect(200);
+    });
+
+    it('Error: Already username exist', () => {
+      return privateTest(`
+          mutation {
+            editUser(input: {
+              username: "${otherUser.username}"
+              password: "${updatedUser.password}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editUser: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Already username exist');
+        });
+    });
+
+    it('Error: Same Password', () => {
+      return privateTest(`
+          mutation {
+            editUser(input: {
+              username: "${updatedUser.username}"
+              password: "${user.password}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editUser: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Same Password');
+        });
+    });
+
+    it.todo('Error: Same Team');
+    it.todo('Error: Team not found');
+
+    // Todo: Change Team
+    it('Update username, password', () => {
+      return privateTest(`
+          mutation {
+            editUser(input: {
+              username: "${updatedUser.username}"
+              password: "${updatedUser.password}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editUser: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+  });
+
+  describe('getUser', () => {
+    it('Error: User not found', () => {
+      return privateTest(`
+          query {
+            getUser(input: {
+              userId: 999
+            }) {
+              ok
+              error
+              user {
+                username
+                studentEmail
+              }
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                getUser: { ok, error, user },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('User not found');
+          expect(user).toEqual(null);
+        });
+    });
+
+    it('Find user by ID', () => {
+      return privateTest(`
+          query {
+            getUser(input: {
+              userId: 2
+            }) {
+              ok
+              error
+              user {
+                username
+                studentEmail
+              }
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                getUser: {
+                  ok,
+                  error,
+                  user: { username, studentEmail },
+                },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+          expect(username).toEqual(otherUser.username);
+          expect(studentEmail).toEqual(`${otherUser.studentId}@jnu.ac.kr`);
+        });
+    });
+  });
+
   it.todo('deleteUser');
 });

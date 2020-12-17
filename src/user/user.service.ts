@@ -112,12 +112,6 @@ export class UserService {
   ): Promise<EditUserOutput> {
     try {
       const user = await this.userRepo.findOne({ id: userId });
-      if (!user) {
-        return {
-          ok: false,
-          error: 'User not found',
-        };
-      }
       if (username) {
         if (username === user.username) {
           return {
