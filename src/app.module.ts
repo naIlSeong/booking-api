@@ -41,7 +41,8 @@ import { Team } from './team/entity/team.entity';
       password: process.env.DB_PASSWORD,
       database: process.env.DB_DATABASE,
       synchronize: true,
-      logging: true,
+      logging:
+        process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
       entities: [User, Booking, Place, PlaceLocation, Team],
     }),
     GraphQLModule.forRoot({
