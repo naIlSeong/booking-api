@@ -51,16 +51,6 @@ describe('TeamService', () => {
       teamName: 'mockTeamName',
     };
 
-    it('should fail if user not found', async () => {
-      userRepo.findOne.mockResolvedValue(null);
-
-      const result = await service.createTeam(createTeamArgs, userId);
-      expect(result).toEqual({
-        ok: false,
-        error: 'User not found',
-      });
-    });
-
     it('should fail on exist team name', async () => {
       userRepo.findOne.mockResolvedValueOnce({ id: userId });
       teamRepo.findOne.mockResolvedValueOnce({
@@ -70,7 +60,7 @@ describe('TeamService', () => {
       const result = await service.createTeam(createTeamArgs, userId);
       expect(result).toEqual({
         ok: false,
-        error: 'Already team exist',
+        error: 'Already team name exist',
       });
     });
 
@@ -121,15 +111,15 @@ describe('TeamService', () => {
       memberId: 2,
     };
 
-    it('should fail if user not found', async () => {
-      userRepo.findOne.mockResolvedValue(null);
+    // it('should fail if user not found', async () => {
+    //   userRepo.findOne.mockResolvedValue(null);
 
-      const result = await service.registerMember(registerMemberArgs, userId);
-      expect(result).toEqual({
-        ok: false,
-        error: 'User not found',
-      });
-    });
+    //   const result = await service.registerMember(registerMemberArgs, userId);
+    //   expect(result).toEqual({
+    //     ok: false,
+    //     error: 'User not found',
+    //   });
+    // });
 
     it('should fail if has not team', async () => {
       userRepo.findOne.mockResolvedValue({
@@ -140,20 +130,6 @@ describe('TeamService', () => {
       expect(result).toEqual({
         ok: false,
         error: 'Not have a team',
-      });
-    });
-
-    it('should fail if team not found', async () => {
-      userRepo.findOne.mockResolvedValueOnce({
-        id: userId,
-        teamId: 1,
-      });
-      teamRepo.findOne.mockResolvedValueOnce(null);
-
-      const result = await service.registerMember(registerMemberArgs, userId);
-      expect(result).toEqual({
-        ok: false,
-        error: 'Team not found',
       });
     });
 

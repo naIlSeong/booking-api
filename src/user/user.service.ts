@@ -87,7 +87,6 @@ export class UserService {
 
   async deleteUser(userId: number): Promise<DeleteUserOutput> {
     try {
-      const user = await this.userRepo.findOne({ id: userId });
       await this.userRepo.delete({ id: userId });
       return {
         ok: true,

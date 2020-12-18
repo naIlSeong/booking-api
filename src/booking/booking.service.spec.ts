@@ -63,7 +63,6 @@ describe('BookingService', () => {
   it.todo('createBooking');
   it.todo('bookingDetail');
   it.todo('getBookings');
-  it.todo('registerParticipant');
   it.todo('deleteBooking');
   it.todo('editBooking');
   it.todo('createInUse');

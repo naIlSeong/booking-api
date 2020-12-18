@@ -185,22 +185,9 @@ describe('UserService', () => {
       id: 1,
     };
 
-    it('should fail if user not found', async () => {
-      userRepo.findOne.mockResolvedValue(null);
-
-      const result = await service.deleteUser(deleteUserArgs);
-      expect(result).toEqual({
-        ok: false,
-        error: 'User not found',
-      });
-    });
-
     it('should delete user', async () => {
-      userRepo.findOne.mockResolvedValue(deleteUserArgs);
-
-      const result = await service.deleteUser(deleteUserArgs);
-      expect(userRepo.findOne).toBeCalledTimes(1);
-      expect(userRepo.delete).toBeCalledWith(deleteUserArgs);
+      const result = await service.deleteUser(deleteUserArgs.id);
+      expect(userRepo.delete).toBeCalledWith({ id: deleteUserArgs.id });
       expect(userRepo.delete).toBeCalledTimes(1);
       expect(result).toEqual({
         ok: true,
@@ -208,9 +195,9 @@ describe('UserService', () => {
     });
 
     it('should fail on exception', async () => {
-      userRepo.findOne.mockRejectedValue(new Error());
+      userRepo.delete.mockRejectedValue(new Error());
 
-      const result = await service.deleteUser(deleteUserArgs);
+      const result = await service.deleteUser(deleteUserArgs.id);
       expect(result).toEqual({
         ok: false,
         error: 'Unexpected Error',
@@ -230,16 +217,6 @@ describe('UserService', () => {
       password: 'newPassword',
       teamId: 2,
     };
-
-    it('should fail if user not found', async () => {
-      userRepo.findOne.mockResolvedValue(null);
-
-      const result = await service.editUser(editUserArgs, mockUser.id);
-      expect(result).toEqual({
-        ok: false,
-        error: 'User not found',
-      });
-    });
 
     it('should fail on same username', async () => {
       userRepo.findOne.mockResolvedValue({

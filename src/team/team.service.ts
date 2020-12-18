@@ -80,7 +80,6 @@ export class TeamService {
       }
 
       const member = await this.userRepo.findOne({ id: memberId });
-      console.log(member);
       if (!member) {
         return {
           ok: false,
