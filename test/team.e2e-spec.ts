@@ -3,6 +3,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AppModule } from 'src/app.module';
 import { getConnection } from 'typeorm';
 import * as request from 'supertest';
+import { UserRole } from 'src/user/entity/user.entity';
 
 // ID : 1 , team: 1
 const representative = {
@@ -10,13 +11,13 @@ const representative = {
   password: 'testPassword',
 };
 
-// ID : 2 , team: 1
+// ID : 2 , team: 2
 const otherUser = {
   username: 'otherUsername',
   password: 'otherPassword',
 };
 
-// ID : 3 , team: 2
+// ID : 3 , team: 1
 const member = {
   username: 'memberUsername',
   password: 'memberPassword',
@@ -231,7 +232,6 @@ describe('TeamModule (e2e)', () => {
     });
   });
 
-  // ToDo
   describe('registerMember', () => {
     it('Error: User not found', () => {
       return privateTest(`
@@ -466,6 +466,95 @@ describe('TeamModule (e2e)', () => {
     });
   });
 
+  describe('deleteTeam', () => {
+    it('Delete team by representative', () => {
+      return privateTest(`
+          mutation {
+            deleteTeam {
+              ok
+              error
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                deleteTeam: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+
+    // userId: 1, role: Representative
+    it('Check role: Representative => Individual', () => {
+      return privateTest(`
+          query {
+            me {
+              username
+              role
+              team {
+                teamName
+              }
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                me: { username, role, team },
+              },
+            },
+          } = res;
+          expect(username).toEqual(representative.username);
+          expect(role).toEqual(UserRole.Individual);
+          expect(team).toEqual(null);
+        });
+    });
+
+    // userId: 3, role: Member
+    it('Check role: Member => Individual', () => {
+      return privateTest(`
+          query {
+            getUser(input: {
+              userId: 3
+            }) {
+              ok
+              error
+              user {
+                username
+                role
+                team {
+                  teamName
+                }
+              }
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                getUser: {
+                  user: { username, role, team },
+                },
+              },
+            },
+          } = res;
+          expect(username).toEqual(member.username);
+          expect(role).toEqual(UserRole.Individual);
+          expect(team).toEqual(null);
+        });
+    });
+  });
+
   describe('getTeams', () => {
     it('Find all teams', () => {
       return privateTest(`
@@ -493,19 +582,8 @@ describe('TeamModule (e2e)', () => {
           } = res;
           expect(ok).toEqual(true);
           expect(error).toEqual(null);
-          expect(teams.length).toEqual(2);
+          expect(teams.length).toEqual(1);
           expect(teams).toEqual([
-            {
-              teamName: NEW_TEAM_NAME,
-              members: [
-                {
-                  username: representative.username,
-                },
-                {
-                  username: member.username,
-                },
-              ],
-            },
             {
               teamName: OTHER_TEAM_NAME,
               members: [
@@ -518,6 +596,4 @@ describe('TeamModule (e2e)', () => {
         });
     });
   });
-
-  it.todo('deleteTeam');
 });

@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserRole } from 'src/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { CreateTeamInput, CreateTeamOutput } from './dto/create-team.dto';
-import { DeleteTeamInput, DeleteTeamOutput } from './dto/delete-team.dto';
+import { DeleteTeamOutput } from './dto/delete-team.dto';
 import { EditTeamInput, EditTeamOutput } from './dto/edit-team.dto';
 import { GetTeamsOutput } from './dto/get-teams.dto';
 import {
@@ -167,39 +167,22 @@ export class TeamService {
     }
   }
 
-  async deleteTeam(
-    { teamId }: DeleteTeamInput,
-    userId: number,
-  ): Promise<DeleteTeamOutput> {
+  async deleteTeam(representativeId: number): Promise<DeleteTeamOutput> {
     try {
-      const user = await this.userRepo.findOne({ id: userId });
-      if (!user) {
-        return {
-          ok: false,
-          error: 'User not found',
-        };
-      }
-      if (!user.teamId) {
-        return {
-          ok: false,
-          error: 'Not have a team',
-        };
-      }
-      const team = await this.teamRepo.findOne({ id: teamId });
-      if (!team) {
-        return {
-          ok: false,
-          error: 'Team not found',
-        };
-      }
-      if (user.teamId !== team.id) {
-        return {
-          ok: false,
-          error: "You can't do this",
-        };
-      }
-
-      await this.teamRepo.delete({ id: teamId });
+      const representative = await this.userRepo.findOne({
+        id: representativeId,
+      });
+      const team = await this.teamRepo.findOne({
+        where: { id: representative.teamId },
+        relations: ['members'],
+      });
+      representative.role = UserRole.Individual;
+      team.members.map(async (member) => {
+        member.role = UserRole.Individual;
+        await this.userRepo.save(member);
+      });
+      await this.userRepo.save(representative);
+      await this.teamRepo.delete({ id: team.id });
       return {
         ok: true,
       };

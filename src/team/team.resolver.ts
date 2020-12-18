@@ -3,7 +3,7 @@ import { AuthUser } from 'src/auth/auth.decorator';
 import { Role } from 'src/auth/role.decorator';
 import { User } from 'src/user/entity/user.entity';
 import { CreateTeamInput, CreateTeamOutput } from './dto/create-team.dto';
-import { DeleteTeamInput, DeleteTeamOutput } from './dto/delete-team.dto';
+import { DeleteTeamOutput } from './dto/delete-team.dto';
 import { EditTeamInput, EditTeamOutput } from './dto/edit-team.dto';
 import { GetTeamsOutput } from './dto/get-teams.dto';
 import {
@@ -64,10 +64,7 @@ export class TeamResolver {
 
   @Mutation((returns) => DeleteTeamOutput)
   @Role(['Representative'])
-  deleteTeam(
-    @Args('input') deleteTeamInput: DeleteTeamInput,
-    @AuthUser() user: User,
-  ): Promise<DeleteTeamOutput> {
-    return this.teamService.deleteTeam(deleteTeamInput, user.id);
+  deleteTeam(@AuthUser() user: User): Promise<DeleteTeamOutput> {
+    return this.teamService.deleteTeam(user.id);
   }
 }
