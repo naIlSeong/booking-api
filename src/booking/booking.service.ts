@@ -118,7 +118,7 @@ export class BookingService {
       }
 
       const booking = this.bookingRepo.create({
-        creator,
+        creatorId: creator.id,
         place,
         ...createBookingInput,
       });
@@ -265,7 +265,7 @@ export class BookingService {
           error: 'Booking not found',
         };
       }
-      if (booking.creator.id !== creator.id) {
+      if (booking.creatorId !== creator.id) {
         return {
           ok: false,
           error: "You can't do this",
@@ -301,7 +301,7 @@ export class BookingService {
           error: 'Booking not found',
         };
       }
-      if (booking.creator.id !== creator.id) {
+      if (booking.creatorId !== creator.id) {
         return {
           ok: false,
           error: "You can't do this",
@@ -447,7 +447,7 @@ export class BookingService {
         startAt,
         endAt,
         place,
-        creator,
+        creatorId: creator.id,
         inUse: true,
       });
 
@@ -522,7 +522,7 @@ export class BookingService {
           error: 'Booking not found',
         };
       }
-      if (booking.creator.id !== creator.id) {
+      if (booking.creatorId !== creator.id) {
         return {
           ok: false,
           error: "You can't do this",
@@ -573,7 +573,7 @@ export class BookingService {
           error: 'Booking not found',
         };
       }
-      if (booking.creator.id !== creator.id) {
+      if (booking.creatorId !== creator.id) {
         return {
           ok: false,
           error: "You can't to this",

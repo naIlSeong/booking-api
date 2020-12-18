@@ -30,9 +30,9 @@ export class Booking extends CoreEntity {
   })
   team?: Team;
 
-  @Field((type) => User)
-  @Column((type) => User)
-  creator: User;
+  @Field((type) => Int)
+  @Column()
+  creatorId: number;
 
   // @RelationId((booking: Booking) => booking.representative)
   // representativeId: number;
