@@ -86,7 +86,7 @@ export class BookingService {
 
   async createBooking(
     createBookingInput: CreateBookingInput,
-    representative: User,
+    creator: User,
   ): Promise<CreateBookingOutput> {
     try {
       const place = await this.placeRepo.findOne({
@@ -118,13 +118,13 @@ export class BookingService {
       }
 
       const booking = this.bookingRepo.create({
-        representative,
+        creator,
         place,
         ...createBookingInput,
       });
 
-      if (createBookingInput.withTeam === true && representative.teamId) {
-        const team = await this.teamRepo.findOne({ id: representative.teamId });
+      if (createBookingInput.withTeam === true && creator.teamId) {
+        const team = await this.teamRepo.findOne({ id: creator.teamId });
         if (!team) {
           return {
             ok: false,
@@ -151,7 +151,7 @@ export class BookingService {
   }: BookingDetailInput): Promise<BookingDetailOutput> {
     try {
       const booking = await this.bookingRepo.findOne(bookingId, {
-        relations: ['participants', 'place', 'team'],
+        relations: ['creator', 'place', 'team'],
       });
       if (!booking) {
         return {
@@ -201,68 +201,71 @@ export class BookingService {
     }
   }
 
-  async registerParticipant(
-    { participantId, bookingId }: RegisterParticipantInput,
-    representative: User,
-  ): Promise<RegisterParticipantOutput> {
-    try {
-      const booking = await this.bookingRepo.findOne(
-        {
-          id: bookingId,
-        },
-        { relations: ['participants'] },
-      );
-      if (!booking) {
-        return {
-          ok: false,
-          error: 'Booking not found',
-        };
-      }
-      if (booking.representativeId !== representative.id) {
-        return {
-          ok: false,
-          error: "You can't do this",
-        };
-      }
-      if (booking.inUse === true) {
-        return {
-          ok: false,
-          error: "You can't do this in use",
-        };
-      }
-      const participant = await this.userRepo.findOne({ id: participantId });
-      if (!participant) {
-        return {
-          ok: false,
-          error: 'User not found',
-        };
-      }
-      booking.participants.push(participant);
-      await this.bookingRepo.save(booking);
-      return {
-        ok: true,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        error: 'Unexpected Error',
-      };
-    }
-  }
+  // async registerParticipant(
+  //   { participantId, bookingId }: RegisterParticipantInput,
+  //   creator: User,
+  // ): Promise<RegisterParticipantOutput> {
+  //   try {
+  //     const booking = await this.bookingRepo.findOne(
+  //       {
+  //         id: bookingId,
+  //       },
+  //       { relations: ['creator', 'participants'] },
+  //     );
+  //     if (!booking) {
+  //       return {
+  //         ok: false,
+  //         error: 'Booking not found',
+  //       };
+  //     }
+  //     if (booking.creator.id !== creator.id) {
+  //       return {
+  //         ok: false,
+  //         error: "You can't do this",
+  //       };
+  //     }
+  //     if (booking.inUse === true) {
+  //       return {
+  //         ok: false,
+  //         error: "You can't do this in use",
+  //       };
+  //     }
+  //     const participant = await this.userRepo.findOne({ id: participantId });
+  //     if (!participant) {
+  //       return {
+  //         ok: false,
+  //         error: 'User not found',
+  //       };
+  //     }
+  //     booking.participants.push(participant);
+  //     await this.bookingRepo.save(booking);
+  //     return {
+  //       ok: true,
+  //     };
+  //   } catch (error) {
+  //     return {
+  //       ok: false,
+  //       error: 'Unexpected Error',
+  //     };
+  //   }
+  // }
 
   async deleteBooking(
     { bookingId }: DeleteBookingInput,
-    representative: User,
+    creator: User,
   ): Promise<DeleteBookingOutput> {
     try {
-      const booking = await this.bookingRepo.findOne({ id: bookingId });
+      const booking = await this.bookingRepo.findOne({
+        where: { id: bookingId },
+        relations: ['creator'],
+      });
       if (!booking) {
         return {
           ok: false,
           error: 'Booking not found',
         };
       }
-      if (booking.representativeId !== representative.id) {
+      if (booking.creator.id !== creator.id) {
         return {
           ok: false,
           error: "You can't do this",
@@ -283,7 +286,7 @@ export class BookingService {
 
   async editBooking(
     { startAt, endAt, bookingId, placeId, userId, teamId }: EditBookingInput,
-    representative: User,
+    creator: User,
   ): Promise<EditBookingOutput> {
     try {
       const booking = await this.bookingRepo.findOne({
@@ -298,7 +301,7 @@ export class BookingService {
           error: 'Booking not found',
         };
       }
-      if (booking.representativeId !== representative.id) {
+      if (booking.creator.id !== creator.id) {
         return {
           ok: false,
           error: "You can't do this",
@@ -370,27 +373,28 @@ export class BookingService {
       }
 
       // representative 변경
-      if (userId) {
-        const newRepresentative = await this.userRepo.findOne({ id: userId });
-        if (!newRepresentative) {
-          return {
-            ok: false,
-            error: 'User not found',
-          };
-        }
-        booking.representative = newRepresentative;
-      }
+      // if (userId) {
+      //   const newRepresentative = await this.userRepo.findOne({ id: userId });
+      //   if (!newRepresentative) {
+      //     return {
+      //       ok: false,
+      //       error: 'User not found',
+      //     };
+      //   }
+      //   // ToDo : Only member can be new creator
+      //   booking.creator = newRepresentative;
+      // }
 
-      if (teamId) {
-        const team = await this.teamRepo.findOne({ id: teamId });
-        if (!team) {
-          return {
-            ok: false,
-            error: 'Team not found',
-          };
-        }
-        booking.team = team;
-      }
+      // if (teamId) {
+      //   const team = await this.teamRepo.findOne({ id: teamId });
+      //   if (!team) {
+      //     return {
+      //       ok: false,
+      //       error: 'Team not found',
+      //     };
+      //   }
+      //   booking.team = team;
+      // }
 
       await this.bookingRepo.save(booking);
 
@@ -407,7 +411,7 @@ export class BookingService {
 
   async createInUse(
     { placeId, withTeam }: CreateInUseInput,
-    user: User,
+    creator: User,
   ): Promise<CreateInUseOutput> {
     try {
       const place = await this.placeRepo.findOne({ id: placeId });
@@ -443,12 +447,12 @@ export class BookingService {
         startAt,
         endAt,
         place,
-        representative: user,
+        creator,
         inUse: true,
       });
 
       if (withTeam === true) {
-        const team = await this.teamRepo.findOne({ id: user.teamId });
+        const team = await this.teamRepo.findOne({ id: creator.teamId });
         if (!team) {
           return {
             ok: false,
@@ -508,7 +512,7 @@ export class BookingService {
 
   async extendInUse(
     { bookingId }: ExtendInUseInput,
-    representative: User,
+    creator: User,
   ): Promise<ExtendInUseOutput> {
     try {
       const booking = await this.bookingRepo.findOne({ id: bookingId });
@@ -518,7 +522,7 @@ export class BookingService {
           error: 'Booking not found',
         };
       }
-      if (booking.representativeId !== representative.id) {
+      if (booking.creator.id !== creator.id) {
         return {
           ok: false,
           error: "You can't do this",
@@ -559,7 +563,7 @@ export class BookingService {
 
   async finishInUse(
     { bookingId }: FinishInUseInput,
-    representative: User,
+    creator: User,
   ): Promise<FinishInUseOutput> {
     try {
       const booking = await this.bookingRepo.findOne({ id: bookingId });
@@ -569,7 +573,7 @@ export class BookingService {
           error: 'Booking not found',
         };
       }
-      if (booking.representativeId !== representative.id) {
+      if (booking.creator.id !== creator.id) {
         return {
           ok: false,
           error: "You can't to this",

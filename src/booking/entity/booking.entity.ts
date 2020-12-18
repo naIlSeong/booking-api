@@ -31,15 +31,16 @@ export class Booking extends CoreEntity {
   team?: Team;
 
   @Field((type) => User)
-  @Column()
+  @Column((type) => User)
   creator: User;
 
   // @RelationId((booking: Booking) => booking.representative)
   // representativeId: number;
 
-  @Field((type) => [User], { nullable: true })
-  @Column({ nullable: true })
-  participants?: User[];
+  // @Field((type) => [User], { nullable: true })
+  // @ManyToMany((type) => User, { nullable: true })
+  // @JoinTable()
+  // participants?: User[];
 
   // @RelationId((booking: Booking) => booking.participants)
   // participantIds: number[];

@@ -57,17 +57,17 @@ export class BookingResolver {
     return this.bookingService.getBookings(user);
   }
 
-  @Mutation((returns) => RegisterParticipantOutput)
-  @Role(['User'])
-  registerParticipant(
-    @Args('input') registerParticipantInput: RegisterParticipantInput,
-    @AuthUser() representative: User,
-  ): Promise<RegisterParticipantOutput> {
-    return this.bookingService.registerParticipant(
-      registerParticipantInput,
-      representative,
-    );
-  }
+  // @Mutation((returns) => RegisterParticipantOutput)
+  // @Role(['User'])
+  // registerParticipant(
+  //   @Args('input') registerParticipantInput: RegisterParticipantInput,
+  //   @AuthUser() representative: User,
+  // ): Promise<RegisterParticipantOutput> {
+  //   return this.bookingService.registerParticipant(
+  //     registerParticipantInput,
+  //     representative,
+  //   );
+  // }
 
   @Mutation((returns) => DeleteBookingOutput)
   @Role(['User'])
