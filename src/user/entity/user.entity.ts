@@ -23,7 +23,9 @@ import { Team } from 'src/team/entity/team.entity';
 
 export enum UserRole {
   Admin = 'Admin',
-  User = 'User',
+  Individual = 'Individual',
+  Representative = 'Representative',
+  Member = 'Member',
 }
 
 registerEnumType(UserRole, {
@@ -56,7 +58,7 @@ export class User extends CoreEntity {
   password: string;
 
   @Field((type) => UserRole)
-  @Column({ type: 'enum', enum: UserRole, default: UserRole.User })
+  @Column({ type: 'enum', enum: UserRole, default: UserRole.Individual })
   @IsEnum(UserRole)
   role: UserRole;
 

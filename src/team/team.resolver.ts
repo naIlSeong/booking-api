@@ -19,7 +19,7 @@ export class TeamResolver {
   constructor(private readonly teamService: TeamService) {}
 
   @Mutation((returns) => CreateTeamOutput)
-  @Role(['User'])
+  @Role(['Individual'])
   createTeam(
     @Args('input') createTeamInput: CreateTeamInput,
     @AuthUser() user: User,
@@ -28,7 +28,7 @@ export class TeamResolver {
   }
 
   @Mutation((returns) => RegisterMemberOutput)
-  @Role(['User'])
+  @Role(['Representative'])
   registerMember(
     @Args('input') registerMemberInput: RegisterMemberInput,
     @AuthUser() user: User,
@@ -37,7 +37,7 @@ export class TeamResolver {
   }
 
   @Mutation((returns) => EditTeamOutput)
-  @Role(['User'])
+  @Role(['Representative'])
   editTeam(
     @Args('input') editTeamInput: EditTeamInput,
     @AuthUser() user: User,
@@ -46,7 +46,7 @@ export class TeamResolver {
   }
 
   @Query((returns) => TeamDetailOutput)
-  @Role(['User'])
+  @Role(['Any'])
   teamDetail(
     @Args('input') teamDetailInput: TeamDetailInput,
   ): Promise<TeamDetailOutput> {
@@ -60,7 +60,7 @@ export class TeamResolver {
   }
 
   @Mutation((returns) => DeleteTeamOutput)
-  @Role(['User'])
+  @Role(['Representative'])
   deleteTeam(
     @Args('input') deleteTeamInput: DeleteTeamInput,
     @AuthUser() user: User,

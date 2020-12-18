@@ -44,7 +44,7 @@ export class BookingResolver {
   }
 
   @Query((returns) => BookingDetailOutput)
-  @Role(['User'])
+  @Role(['Any'])
   bookingDetail(
     @Args('input') bookingDetailInput: BookingDetailInput,
   ): Promise<BookingDetailOutput> {
@@ -52,7 +52,7 @@ export class BookingResolver {
   }
 
   @Query((returns) => GetBookingsOutput)
-  @Role(['User'])
+  @Role(['Any'])
   getBookings(@AuthUser() user: User): Promise<GetBookingsOutput> {
     return this.bookingService.getBookings(user);
   }
