@@ -154,8 +154,7 @@ export class TeamService {
 
   async getTeams(): Promise<GetTeamsOutput> {
     try {
-      const teams = await this.teamRepo.find();
-
+      const teams = await this.teamRepo.find({ relations: ['members'] });
       return {
         ok: true,
         teams,

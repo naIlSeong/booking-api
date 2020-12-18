@@ -466,6 +466,58 @@ describe('TeamModule (e2e)', () => {
     });
   });
 
-  it.todo('getTeams');
+  describe('getTeams', () => {
+    it('Find all teams', () => {
+      return privateTest(`
+          query {
+            getTeams {
+              ok
+              error
+              teams {
+                teamName
+                members {
+                  username
+                }
+              }
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                getTeams: { ok, error, teams },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+          expect(teams.length).toEqual(2);
+          expect(teams).toEqual([
+            {
+              teamName: NEW_TEAM_NAME,
+              members: [
+                {
+                  username: representative.username,
+                },
+                {
+                  username: member.username,
+                },
+              ],
+            },
+            {
+              teamName: OTHER_TEAM_NAME,
+              members: [
+                {
+                  username: otherUser.username,
+                },
+              ],
+            },
+          ]);
+        });
+    });
+  });
+
   it.todo('deleteTeam');
 });
