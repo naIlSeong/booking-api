@@ -189,12 +189,17 @@ describe('TeamService', () => {
       });
       teamRepo.findOne.mockResolvedValueOnce({
         id: editTeamArgs.teamId,
+        teamName: 'oldTeamName',
       });
       teamRepo.findOne.mockResolvedValueOnce({
+        id: 2,
         teamName: editTeamArgs.teamName,
       });
 
-      const result = await service.editTeam(editTeamArgs, userId);
+      const result = await service.editTeam(
+        { teamName: editTeamArgs.teamName },
+        userId,
+      );
       expect(result).toEqual({
         ok: false,
         error: 'Already team exist',
@@ -212,13 +217,17 @@ describe('TeamService', () => {
         teamName: SAME_TEAM_NAME,
       });
       teamRepo.findOne.mockResolvedValueOnce({
+        id: editTeamArgs.teamId,
         teamName: SAME_TEAM_NAME,
       });
 
-      const result = await service.editTeam(editTeamArgs, userId);
+      const result = await service.editTeam(
+        { teamName: editTeamArgs.teamName },
+        userId,
+      );
       expect(result).toEqual({
         ok: false,
-        error: 'Already team exist',
+        error: 'Same team name',
       });
     });
 
@@ -236,7 +245,10 @@ describe('TeamService', () => {
         teamName: editTeamArgs.teamName,
       });
 
-      const result = await service.editTeam(editTeamArgs, userId);
+      const result = await service.editTeam(
+        { teamName: editTeamArgs.teamName },
+        userId,
+      );
       expect(result).toEqual({
         ok: true,
       });
@@ -245,7 +257,10 @@ describe('TeamService', () => {
     it('should fail on exception', async () => {
       userRepo.findOne.mockRejectedValue(new Error());
 
-      const result = await service.editTeam(editTeamArgs, userId);
+      const result = await service.editTeam(
+        { teamName: editTeamArgs.teamName },
+        userId,
+      );
       expect(result).toEqual({
         ok: false,
         error: 'Unexpected Error',
@@ -330,6 +345,11 @@ describe('TeamService', () => {
         id: deleteTeamArgs.teamId,
         members: [{ ...deleteTeamArgs }],
       });
+      userRepo.save.mockReturnValue({
+        id: userId,
+        teamId: null,
+        role: 'Individual',
+      });
 
       const result = await service.deleteTeam(userId);
       expect(result).toEqual({
@@ -337,6 +357,8 @@ describe('TeamService', () => {
       });
       expect(teamRepo.delete).toBeCalledTimes(1);
       expect(teamRepo.delete).toBeCalledWith({ id: deleteTeamArgs.teamId });
+      expect(teamRepo.save).toBeCalled();
+      expect(userRepo.save).toBeCalled();
     });
 
     it('should fail on exception', async () => {
