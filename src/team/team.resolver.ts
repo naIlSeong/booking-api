@@ -22,18 +22,21 @@ export class TeamResolver {
   @Role(['Individual'])
   createTeam(
     @Args('input') createTeamInput: CreateTeamInput,
-    @AuthUser() user: User,
+    @AuthUser() individual: User,
   ): Promise<CreateTeamOutput> {
-    return this.teamService.createTeam(createTeamInput, user.id);
+    return this.teamService.createTeam(createTeamInput, individual.id);
   }
 
   @Mutation((returns) => RegisterMemberOutput)
   @Role(['Representative'])
   registerMember(
     @Args('input') registerMemberInput: RegisterMemberInput,
-    @AuthUser() user: User,
+    @AuthUser() representative: User,
   ): Promise<RegisterMemberOutput> {
-    return this.teamService.registerMember(registerMemberInput, user.id);
+    return this.teamService.registerMember(
+      registerMemberInput,
+      representative.id,
+    );
   }
 
   @Mutation((returns) => EditTeamOutput)

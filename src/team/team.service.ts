@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/entity/user.entity';
+import { User, UserRole } from 'src/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { CreateTeamInput, CreateTeamOutput } from './dto/create-team.dto';
 import { DeleteTeamInput, DeleteTeamOutput } from './dto/delete-team.dto';
@@ -22,10 +22,10 @@ export class TeamService {
 
   async createTeam(
     { teamName }: CreateTeamInput,
-    userId: number,
+    individualId: number,
   ): Promise<CreateTeamOutput> {
     try {
-      const user = await this.userRepo.findOne({ id: userId });
+      const representative = await this.userRepo.findOne({ id: individualId });
       const exist = await this.teamRepo.findOne({ teamName });
       if (exist) {
         return {
@@ -33,16 +33,12 @@ export class TeamService {
           error: 'Already team name exist',
         };
       }
-      if (user.teamId) {
-        return {
-          ok: false,
-          error: 'Already has team',
-        };
-      }
       const team = this.teamRepo.create({
         teamName,
-        members: [user],
+        members: [representative],
       });
+      representative.role = UserRole.Representative;
+      await this.userRepo.save(representative);
       await this.teamRepo.save(team);
 
       return {
@@ -58,26 +54,20 @@ export class TeamService {
 
   async registerMember(
     { memberId }: RegisterMemberInput,
-    userId: number,
+    representativeId: number,
   ): Promise<RegisterMemberOutput> {
     try {
-      const user = await this.userRepo.findOne({ id: userId });
-      if (!user.teamId) {
-        return {
-          ok: false,
-          error: 'Not have a team',
-        };
-      }
+      const user = await this.userRepo.findOne({ id: representativeId });
       const team = await this.teamRepo.findOne({
         where: { id: user.teamId },
         relations: ['members'],
       });
-      if (user.teamId !== team.id) {
-        return {
-          ok: false,
-          error: "You can't do this",
-        };
-      }
+      // if (user.teamId !== team.id) {
+      //   return {
+      //     ok: false,
+      //     error: "You can't do this",
+      //   };
+      // }
 
       const member = await this.userRepo.findOne({ id: memberId });
       if (!member) {
@@ -86,7 +76,7 @@ export class TeamService {
           error: 'User not found',
         };
       }
-      if (member.teamId) {
+      if (member.teamId && member.role !== UserRole.Individual) {
         return {
           ok: false,
           error: 'Already has team',
@@ -94,6 +84,7 @@ export class TeamService {
       }
       team.members.push(member);
       member.team = team;
+      member.role = UserRole.Member;
       await this.teamRepo.save(team);
       await this.userRepo.save(member);
 

@@ -111,8 +111,8 @@ describe('UserModule (e2e)', () => {
       return publicTest(`
             mutation {
               createUser(input: {
-                username: "otherUsername"
-                password: "${user.password}"
+                username: "${otherUser.username}"
+                password: "${otherUser.password}"
                 studentId: ${user.studentId}
               }) {
                 ok
