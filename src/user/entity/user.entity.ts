@@ -12,6 +12,8 @@ import {
   BeforeUpdate,
   Column,
   Entity,
+  JoinTable,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   RelationId,
@@ -63,10 +65,11 @@ export class User extends CoreEntity {
   role: UserRole;
 
   @Field((type) => [Booking], { nullable: true })
-  @OneToMany((type) => Booking, (booking) => booking.representative, {
+  @ManyToMany((type) => Booking, {
     nullable: true,
     onDelete: 'CASCADE',
   })
+  @JoinTable()
   bookings?: Booking[];
 
   @Field((type) => Team, { nullable: true })

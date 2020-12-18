@@ -1,5 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { Field, InputType, ObjectType } from '@nestjs/graphql';
+import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { CoreEntity } from 'src/common/entity/common.entity';
 import { Team } from 'src/team/entity/team.entity';
 import { User } from 'src/user/entity/user.entity';
@@ -31,19 +31,18 @@ export class Booking extends CoreEntity {
   team?: Team;
 
   @Field((type) => User)
-  @ManyToOne((type) => User, (user) => user.bookings, { eager: true })
-  representative: User;
+  @Column()
+  creator: User;
 
-  @RelationId((booking: Booking) => booking.representative)
-  representativeId: number;
+  // @RelationId((booking: Booking) => booking.representative)
+  // representativeId: number;
 
   @Field((type) => [User], { nullable: true })
-  @ManyToMany((type) => User, { nullable: true })
-  @JoinTable()
+  @Column({ nullable: true })
   participants?: User[];
 
-  @RelationId((booking: Booking) => booking.participants)
-  participantIds: number[];
+  // @RelationId((booking: Booking) => booking.participants)
+  // participantIds: number[];
 
   @Field((type) => Date)
   @Column()
