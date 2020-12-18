@@ -387,7 +387,85 @@ describe('TeamModule (e2e)', () => {
     });
   });
 
-  it.todo('teamDetail');
+  describe('teamDetail', () => {
+    it('Error: Team not found', () => {
+      return privateTest(`
+          query {
+            teamDetail(input: {
+              teamId: 999
+            }) {
+              ok
+              error
+              team {
+                teamName
+                members {
+                  username
+                }
+              }
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                teamDetail: { ok, error, team },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Team not found');
+          expect(team).toEqual(null);
+        });
+    });
+
+    it('Find team ID: 1', () => {
+      return privateTest(`
+      query {
+        teamDetail(input: {
+          teamId: 1
+        }) {
+          ok
+          error
+          team {
+            teamName
+            members {
+              username
+            }
+          }
+        }
+      }
+      `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                teamDetail: {
+                  ok,
+                  error,
+                  team: { teamName, members },
+                },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+          expect(teamName).toEqual(NEW_TEAM_NAME);
+          expect(members.length).toEqual(2);
+          expect(members).toEqual([
+            {
+              username: representative.username,
+            },
+            {
+              username: member.username,
+            },
+          ]);
+        });
+    });
+  });
+
   it.todo('getTeams');
   it.todo('deleteTeam');
 });

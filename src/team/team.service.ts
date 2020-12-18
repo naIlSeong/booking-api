@@ -101,12 +101,6 @@ export class TeamService {
         id: representativeId,
       });
       const team = await this.teamRepo.findOne({ id: representative.teamId });
-      if (!team) {
-        return {
-          ok: false,
-          error: 'Team not found',
-        };
-      }
       const exist = await this.teamRepo.findOne({ teamName });
       if (exist) {
         if (exist.id !== team.id) {
