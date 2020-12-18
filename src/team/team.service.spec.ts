@@ -111,16 +111,6 @@ describe('TeamService', () => {
       memberId: 2,
     };
 
-    // it('should fail if user not found', async () => {
-    //   userRepo.findOne.mockResolvedValue(null);
-
-    //   const result = await service.registerMember(registerMemberArgs, userId);
-    //   expect(result).toEqual({
-    //     ok: false,
-    //     error: 'User not found',
-    //   });
-    // });
-
     it('should fail if has not team', async () => {
       userRepo.findOne.mockResolvedValue({
         id: userId,

@@ -62,13 +62,6 @@ export class TeamService {
         where: { id: user.teamId },
         relations: ['members'],
       });
-      // if (user.teamId !== team.id) {
-      //   return {
-      //     ok: false,
-      //     error: "You can't do this",
-      //   };
-      // }
-
       const member = await this.userRepo.findOne({ id: memberId });
       if (!member) {
         return {
@@ -100,41 +93,31 @@ export class TeamService {
   }
 
   async editTeam(
-    { teamId, teamName }: EditTeamInput,
-    userId: number,
+    { teamName }: EditTeamInput,
+    representativeId: number,
   ): Promise<EditTeamOutput> {
     try {
-      const user = await this.userRepo.findOne({ id: userId });
-      if (!user) {
-        return {
-          ok: false,
-          error: 'User not found',
-        };
-      }
-      if (!user.teamId) {
-        return {
-          ok: false,
-          error: 'Not have a team',
-        };
-      }
-      const team = await this.teamRepo.findOne({ id: teamId });
+      const representative = await this.userRepo.findOne({
+        id: representativeId,
+      });
+      const team = await this.teamRepo.findOne({ id: representative.teamId });
       if (!team) {
         return {
           ok: false,
           error: 'Team not found',
         };
       }
-      if (user.teamId !== team.id) {
-        return {
-          ok: false,
-          error: "You can't do this",
-        };
-      }
       const exist = await this.teamRepo.findOne({ teamName });
       if (exist) {
+        if (exist.id !== team.id) {
+          return {
+            ok: false,
+            error: 'Already team exist',
+          };
+        }
         return {
           ok: false,
-          error: 'Already team exist',
+          error: 'Same team name',
         };
       }
 

@@ -15,7 +15,6 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
-  OneToMany,
   RelationId,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';

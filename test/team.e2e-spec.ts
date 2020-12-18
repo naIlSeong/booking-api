@@ -4,19 +4,19 @@ import { AppModule } from 'src/app.module';
 import { getConnection } from 'typeorm';
 import * as request from 'supertest';
 
-// ID : 1
+// ID : 1 , team: 1
 const representative = {
   username: 'testUsername',
   password: 'testPassword',
 };
 
-// ID : 2
+// ID : 2 , team: 1
 const otherUser = {
   username: 'otherUsername',
   password: 'otherPassword',
 };
 
-// ID : 3
+// ID : 3 , team: 2
 const member = {
   username: 'memberUsername',
   password: 'memberPassword',
@@ -24,6 +24,7 @@ const member = {
 
 const TEAM_NAME = 'teamName';
 const OTHER_TEAM_NAME = 'otherTeamName';
+const NEW_TEAM_NAME = 'newTeamName';
 
 describe('TeamModule (e2e)', () => {
   let app: INestApplication;
@@ -204,7 +205,7 @@ describe('TeamModule (e2e)', () => {
         });
     });
 
-    it('Error: Already has team', () => {
+    it('Create other team', () => {
       return otherPrivateTest(`
         mutation {
             createTeam(input: {
@@ -309,7 +310,83 @@ describe('TeamModule (e2e)', () => {
     });
   });
 
-  it.todo('editTeam');
+  describe('editTeam', () => {
+    it('Error: Already team exist', () => {
+      return privateTest(`
+          mutation {
+            editTeam(input: {
+              teamName: "${OTHER_TEAM_NAME}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editTeam: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Already team exist');
+        });
+    });
+
+    it('Error: Same team name', () => {
+      return privateTest(`
+          mutation {
+            editTeam(input: {
+              teamName: "${TEAM_NAME}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editTeam: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Same team name');
+        });
+    });
+
+    it('Change team name', () => {
+      return privateTest(`
+          mutation {
+            editTeam(input: {
+              teamName: "${NEW_TEAM_NAME}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editTeam: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+  });
+
   it.todo('teamDetail');
   it.todo('getTeams');
   it.todo('deleteTeam');
