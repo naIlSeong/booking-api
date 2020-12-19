@@ -733,8 +733,6 @@ describe('BookingModule (e2e)', () => {
         });
     });
 
-    it.todo('Error: Already finished');
-
     it('Edit booking for test', () => {
       return adminPrivateTest(`
       mutation {
@@ -783,7 +781,157 @@ describe('BookingModule (e2e)', () => {
     });
   });
 
-  it.todo('finishInUse');
+  describe('finishInUse', () => {
+    it('Error: Booking not found', () => {
+      return otherPrivateTest(`
+          mutation {
+            finishInUse(input: {
+              bookingId: 999
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                finishInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Booking not found');
+        });
+    });
+
+    it("Error: You can't to this", () => {
+      return otherPrivateTest(`
+          mutation {
+            finishInUse(input: {
+              bookingId: 2
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                finishInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual("You can't to this");
+        });
+    });
+
+    it('Error: Not in use', () => {
+      return privateTest(`
+          mutation {
+            finishInUse(input: {
+              bookingId: 1
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                finishInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Not in use');
+        });
+    });
+
+    it('Finish inUse ID : 2', () => {
+      return privateTest(`
+          mutation {
+            finishInUse(input: {
+              bookingId: 2
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                finishInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+
+    it('Error: Already finished', () => {
+      return privateTest(`
+          mutation {
+            finishInUse(input: {
+              bookingId: 2
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                finishInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Already finished');
+        });
+    });
+
+    it('Error in extendInUse: Already finished', () => {
+      return privateTest(`
+          mutation {
+            extendInUse(input: {
+              bookingId: 2
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                extendInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Already finished');
+        });
+    });
+  });
 
   it.todo('editBooking');
 

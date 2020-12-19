@@ -544,16 +544,16 @@ export class BookingService {
           error: "You can't do this",
         };
       }
-      if (booking.inUse === false) {
-        return {
-          ok: false,
-          error: 'Not in use',
-        };
-      }
       if (booking.isFinished === true) {
         return {
           ok: false,
           error: 'Already finished',
+        };
+      }
+      if (booking.inUse === false) {
+        return {
+          ok: false,
+          error: 'Not in use',
         };
       }
       const now: Date = new Date();
@@ -582,7 +582,7 @@ export class BookingService {
   // Change creator -> creatorId
   async finishInUse(
     { bookingId }: FinishInUseInput,
-    creator: User,
+    creatorId: number,
   ): Promise<FinishInUseOutput> {
     try {
       const booking = await this.bookingRepo.findOne({ id: bookingId });
@@ -592,22 +592,22 @@ export class BookingService {
           error: 'Booking not found',
         };
       }
-      if (booking.creatorId !== creator.id) {
+      if (booking.creatorId !== creatorId) {
         return {
           ok: false,
           error: "You can't to this",
-        };
-      }
-      if (booking.inUse === false) {
-        return {
-          ok: false,
-          error: 'Not in use',
         };
       }
       if (booking.isFinished === true) {
         return {
           ok: false,
           error: 'Already finished',
+        };
+      }
+      if (booking.inUse === false) {
+        return {
+          ok: false,
+          error: 'Not in use',
         };
       }
 

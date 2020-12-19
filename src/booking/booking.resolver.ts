@@ -123,8 +123,8 @@ export class BookingResolver {
   @Role(['User'])
   finishInUse(
     @Args('input') finishInUseInput: FinishInUseInput,
-    @AuthUser() representative: User,
+    @AuthUser() creator: User,
   ): Promise<FinishInUseOutput> {
-    return this.bookingService.finishInUse(finishInUseInput, representative);
+    return this.bookingService.finishInUse(finishInUseInput, creator.id);
   }
 }
