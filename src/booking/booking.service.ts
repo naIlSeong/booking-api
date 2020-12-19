@@ -2,8 +2,8 @@ import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Place } from 'src/place/entity/place.entity';
 import { Team } from 'src/team/entity/team.entity';
-import { User } from 'src/user/entity/user.entity';
-import { LessThan, MoreThan, Repository } from 'typeorm';
+import { User, UserRole } from 'src/user/entity/user.entity';
+import { LessThan, LessThanOrEqual, MoreThan, Repository } from 'typeorm';
 import {
   BookingDetailInput,
   BookingDetailOutput,
@@ -41,42 +41,42 @@ export class BookingService {
   ) {}
 
   async checkSchedule(place: Place, startAt: Date, endAt: Date) {
-    const startEarly = await this.bookingRepo.find({
+    const startEarlyOrEqual = await this.bookingRepo.find({
       place,
-      startAt: LessThan(startAt),
+      startAt: LessThanOrEqual(startAt),
       endAt: MoreThan(startAt),
     });
-    const startLater1 = await this.bookingRepo.find({
+    const startInMiddle1 = await this.bookingRepo.find({
       place,
       startAt: MoreThan(startAt),
     });
-    const startLater2 = await this.bookingRepo.find({
+    const startInMiddle2 = await this.bookingRepo.find({
       place,
       startAt: LessThan(endAt),
     });
-    const startLater: Booking[] = [];
-    startLater1.forEach((a) =>
-      startLater2.forEach((b) => {
+    const startInMiddle: Booking[] = [];
+    startInMiddle1.forEach((a) =>
+      startInMiddle2.forEach((b) => {
         if (a.id === b.id) {
-          startLater.push(a);
+          startInMiddle.push(a);
         }
       }),
     );
-    return { startEarly, startLater };
+    return { startEarlyOrEqual, startInMiddle };
   }
 
   isMyBooking(
     bookingId: number,
-    startEarly: Booking[],
-    startLater: Booking[],
+    startEarlyOrEqual: Booking[],
+    startInMiddle: Booking[],
   ): boolean {
     if (
-      (startEarly.length === 1 &&
-        startEarly[0].id === bookingId &&
-        startLater.length === 0) ||
-      (startEarly.length === 0 &&
-        startLater.length === 1 &&
-        startLater[0].id === bookingId)
+      (startEarlyOrEqual.length === 1 &&
+        startEarlyOrEqual[0].id === bookingId &&
+        startInMiddle.length === 0) ||
+      (startEarlyOrEqual.length === 0 &&
+        startInMiddle.length === 1 &&
+        startInMiddle[0].id === bookingId)
     ) {
       return true;
     } else {
@@ -86,7 +86,7 @@ export class BookingService {
 
   async createBooking(
     createBookingInput: CreateBookingInput,
-    creator: User,
+    creatorId: number,
   ): Promise<CreateBookingOutput> {
     try {
       const place = await this.placeRepo.findOne({
@@ -104,12 +104,13 @@ export class BookingService {
           error: 'Place not available',
         };
       }
-      const { startEarly, startLater } = await this.checkSchedule(
+      const { startEarlyOrEqual, startInMiddle } = await this.checkSchedule(
         place,
         createBookingInput.startAt,
         createBookingInput.endAt,
       );
-      const existBooking = startEarly.length !== 0 || startLater.length !== 0;
+      const existBooking =
+        startEarlyOrEqual.length !== 0 || startInMiddle.length !== 0;
       if (existBooking) {
         return {
           ok: false,
@@ -118,19 +119,18 @@ export class BookingService {
       }
 
       const booking = this.bookingRepo.create({
-        creatorId: creator.id,
+        creatorId: creatorId,
         place,
         ...createBookingInput,
       });
+      const creator = await this.userRepo.findOne({ id: creatorId });
 
-      if (createBookingInput.withTeam === true && creator.teamId) {
+      if (
+        createBookingInput.withTeam === true &&
+        creator.teamId &&
+        creator.role !== UserRole.Individual
+      ) {
         const team = await this.teamRepo.findOne({ id: creator.teamId });
-        if (!team) {
-          return {
-            ok: false,
-            error: 'Team not found',
-          };
-        }
         booking.team = team;
       }
 
@@ -141,7 +141,7 @@ export class BookingService {
     } catch (error) {
       return {
         ok: false,
-        error,
+        error: 'Unexpected Error',
       };
     }
   }
@@ -334,13 +334,16 @@ export class BookingService {
           startAt = booking.startAt;
           endAt = booking.endAt;
         }
-        const { startEarly, startLater } = await this.checkSchedule(
+        const { startEarlyOrEqual, startInMiddle } = await this.checkSchedule(
           booking.place,
           startAt,
           endAt,
         );
-        if (startEarly.length !== 0 || startLater.length !== 0) {
-          if (this.isMyBooking(bookingId, startEarly, startLater) === false) {
+        if (startEarlyOrEqual.length !== 0 || startInMiddle.length !== 0) {
+          if (
+            this.isMyBooking(bookingId, startEarlyOrEqual, startInMiddle) ===
+            false
+          ) {
             return {
               ok: false,
               error: 'Already booking exist',
@@ -355,13 +358,16 @@ export class BookingService {
       // 시간 변경
       if (startAt && endAt) {
         // check startAt & endAt
-        const { startEarly, startLater } = await this.checkSchedule(
+        const { startEarlyOrEqual, startInMiddle } = await this.checkSchedule(
           booking.place,
           startAt,
           endAt,
         );
-        if (startEarly.length !== 0 || startLater.length !== 0) {
-          if (this.isMyBooking(bookingId, startEarly, startLater) === false) {
+        if (startEarlyOrEqual.length !== 0 || startInMiddle.length !== 0) {
+          if (
+            this.isMyBooking(bookingId, startEarlyOrEqual, startInMiddle) ===
+            false
+          ) {
             return {
               ok: false,
               error: 'Already booking exist',
@@ -431,12 +437,12 @@ export class BookingService {
       const startAt: Date = new Date();
       const endAt: Date = new Date(startAt.getTime() + 3600000);
 
-      const { startEarly, startLater } = await this.checkSchedule(
+      const { startEarlyOrEqual, startInMiddle } = await this.checkSchedule(
         place,
         startAt,
         endAt,
       );
-      if (startEarly.length !== 0 || startLater.length !== 0) {
+      if (startEarlyOrEqual.length !== 0 || startInMiddle.length !== 0) {
         return {
           ok: false,
           error: 'Already booking exist',

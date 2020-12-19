@@ -35,12 +35,9 @@ export class BookingResolver {
   @Role(['User'])
   createBooking(
     @Args('input') createBookingInput: CreateBookingInput,
-    @AuthUser() representative: User,
+    @AuthUser() creator: User,
   ): Promise<CreateBookingOutput> {
-    return this.bookingService.createBooking(
-      createBookingInput,
-      representative,
-    );
+    return this.bookingService.createBooking(createBookingInput, creator.id);
   }
 
   @Query((returns) => BookingDetailOutput)
