@@ -10,6 +10,7 @@ const admin = {
 };
 
 const LOCATION = 'location';
+const PLACE = 'place';
 
 describe('PlaceModule (e2e)', () => {
   let app: INestApplication;
@@ -203,8 +204,138 @@ describe('PlaceModule (e2e)', () => {
   });
 
   // Place
-  it.todo('createPlace');
-  it.todo('toggleIsAvailable');
+  describe('createPlace', () => {
+    it('Error: Location not found', () => {
+      return privateTest(`
+          mutation {
+            createPlace(input: {
+              locationId: 999
+              placeName: "${PLACE}"
+            }) {
+              ok
+              error
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createPlace: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Location not found');
+        });
+    });
+
+    it('Create new place', () => {
+      return privateTest(`
+          mutation {
+            createPlace(input: {
+              locationId: 1
+              placeName: "${PLACE}"
+            }) {
+              ok
+              error
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createPlace: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+
+    it('Error: Already place exist', () => {
+      return privateTest(`
+          mutation {
+            createPlace(input: {
+              locationId: 1
+              placeName: "${PLACE}"
+            }) {
+              ok
+              error
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createPlace: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Already place exist');
+        });
+    });
+  });
+
+  describe('toggleIsAvailable', () => {
+    it('Error: Place not found', () => {
+      return privateTest(`
+          mutation {
+            toggleIsAvailable(input: {
+              id: 999
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                toggleIsAvailable: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Place not found');
+        });
+    });
+
+    it('Change isAvailable to "true"', () => {
+      return privateTest(`
+          mutation {
+            toggleIsAvailable(input: {
+              id: 1
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                toggleIsAvailable: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+  });
+
   it.todo('editPlace');
   it.todo('deletePlace');
   it.todo('placeDetail');
