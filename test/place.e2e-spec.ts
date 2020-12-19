@@ -9,6 +9,8 @@ const admin = {
   password: 'adminPassword',
 };
 
+const LOCATION = 'location';
+
 describe('PlaceModule (e2e)', () => {
   let app: INestApplication;
   let jwtToken: string;
@@ -81,8 +83,124 @@ describe('PlaceModule (e2e)', () => {
   });
 
   // PlaceLocation
-  it.todo('createLocation');
-  it.todo('locationDetail');
+  describe('createLocation', () => {
+    it('Create new location', () => {
+      return privateTest(`
+          mutation {
+            createLocation(input: {
+              locationName: "${LOCATION}"
+            }) {
+              ok
+              error
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createLocation: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+
+    it('Error: Already location exist', () => {
+      return privateTest(`
+          mutation {
+            createLocation(input: {
+              locationName: "${LOCATION}"
+            }) {
+              ok
+              error
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createLocation: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Already location exist');
+        });
+    });
+  });
+
+  describe('locationDetail', () => {
+    it('Error: Location not found', () => {
+      return privateTest(`
+          query {
+            locationDetail(input: {
+              locationId: 999
+            }) {
+              ok
+              error
+              location {
+                locationName
+                isAvailable
+              }
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                locationDetail: { ok, error, location },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Location not found');
+          expect(location).toEqual(null);
+        });
+    });
+
+    it('Find location ID: 1', () => {
+      return privateTest(`
+          query {
+            locationDetail(input: {
+              locationId: 1
+            }) {
+              ok
+              error
+              location {
+                locationName
+                isAvailable
+              }
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                locationDetail: {
+                  ok,
+                  error,
+                  location: { locationName, isAvailable },
+                },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+          expect(locationName).toEqual(LOCATION);
+          expect(isAvailable).toEqual(true);
+        });
+    });
+  });
 
   // Place
   it.todo('createPlace');
