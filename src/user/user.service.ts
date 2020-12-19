@@ -3,7 +3,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateUserInput, CreateUserOutput } from './dto/create-user.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
-import { User } from './entity/user.entity';
+import { User, UserRole } from './entity/user.entity';
 import { JwtService } from 'src/jwt/jwt.service';
 import { DeleteUserOutput } from './dto/delete-user.dto';
 import { EditUserInput, EditUserOutput } from './dto/edit-user.dto';
@@ -45,6 +45,43 @@ export class UserService {
       }
 
       await this.userRepo.save(user);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async createAdmin({
+    username,
+    password,
+  }: CreateUserInput): Promise<CreateUserOutput> {
+    try {
+      const existAdmin = await this.userRepo.findOne({ role: UserRole.Admin });
+      if (existAdmin) {
+        return {
+          ok: false,
+          error: 'Already exist admin',
+        };
+      }
+      const existUsername = await this.userRepo.findOne({ username });
+      if (existUsername) {
+        return {
+          ok: false,
+          error: 'Already exist username',
+        };
+      }
+      await this.userRepo.save(
+        this.userRepo.create({
+          username,
+          password,
+          role: UserRole.Admin,
+        }),
+      );
       return {
         ok: true,
       };

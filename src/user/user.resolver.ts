@@ -26,6 +26,13 @@ export class UserResolver {
     return this.userService.createUser(createUserInput);
   }
 
+  @Mutation((retruns) => CreateUserOutput)
+  createAdmin(
+    @Args('input') createUserInput: CreateUserInput,
+  ): Promise<CreateUserOutput> {
+    return this.userService.createAdmin(createUserInput);
+  }
+
   @Mutation((returns) => LoginOutput)
   login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
     return this.userService.login(loginInput);
