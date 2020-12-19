@@ -577,9 +577,108 @@ describe('PlaceModule (e2e)', () => {
   });
 
   describe('deletePlace', () => {
-    it.todo('Error: Location not found');
-    it.todo('Error: Place not found');
-    it.todo("Error: Check 'inUse' and 'isAvailable' is false");
-    it.todo('Delete place');
+    it('Error: Location not found', () => {
+      return privateTest(`
+          mutation {
+            deletePlace(input: {
+              locationId: 999
+              placeId: 999
+            }) {
+              ok
+              error
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                deletePlace: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Location not found');
+        });
+    });
+
+    it('Error: Place not found', () => {
+      return privateTest(`
+          mutation {
+            deletePlace(input: {
+              locationId: 1
+              placeId: 999
+            }) {
+              ok
+              error
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                deletePlace: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Place not found');
+        });
+    });
+
+    it("Error: Check 'inUse' and 'isAvailable' is false", () => {
+      return privateTest(`
+          mutation {
+            deletePlace(input: {
+              locationId: 1
+              placeId: 1
+            }) {
+              ok
+              error
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                deletePlace: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual("Check 'inUse' and 'isAvailable' is false");
+        });
+    });
+
+    it('Delete place', () => {
+      return privateTest(`
+          mutation {
+            deletePlace(input: {
+              locationId: 1
+              placeId: 2
+            }) {
+              ok
+              error
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                deletePlace: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
   });
 });
