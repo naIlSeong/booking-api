@@ -494,6 +494,92 @@ describe('PlaceModule (e2e)', () => {
     });
   });
 
-  it.todo('deletePlace');
-  it.todo('placeDetail');
+  describe('placeDetail', () => {
+    it('Error: Place not found', () => {
+      return privateTest(`
+          query {
+            placeDetail(input: {
+              placeId : 999
+            }) {
+              ok
+              error
+              place {
+                placeName
+                inUse
+                isAvailable
+                placeLocation {
+                  locationName
+                }
+              }
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                placeDetail: { ok, error, place },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Place not found');
+          expect(place).toEqual(null);
+        });
+    });
+
+    it('Find place ID: 1', () => {
+      return privateTest(`
+          query {
+            placeDetail(input: {
+              placeId : 1
+            }) {
+              ok
+              error
+              place {
+                placeName
+                inUse
+                isAvailable
+                placeLocation {
+                  locationName
+                }
+              }
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                placeDetail: {
+                  ok,
+                  error,
+                  place: {
+                    placeName,
+                    inUse,
+                    isAvailable,
+                    placeLocation: { locationName },
+                  },
+                },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+          expect(placeName).toEqual(NEW_PLACE);
+          expect(inUse).toEqual(false);
+          expect(isAvailable).toEqual(true);
+          expect(locationName).toEqual(LOCATION);
+        });
+    });
+  });
+
+  describe('deletePlace', () => {
+    it.todo('Error: Location not found');
+    it.todo('Error: Place not found');
+    it.todo("Error: Check 'inUse' and 'isAvailable' is false");
+    it.todo('Delete place');
+  });
 });
