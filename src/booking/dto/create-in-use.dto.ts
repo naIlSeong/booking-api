@@ -7,7 +7,7 @@ export class CreateInUseInput {
   placeId: number;
 
   @Field((type) => Boolean, { defaultValue: false })
-  withTeam: boolean;
+  withTeam?: boolean;
 }
 
 @ObjectType()

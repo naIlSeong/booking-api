@@ -125,7 +125,9 @@ export class BookingService {
       });
       const creator = await this.userRepo.findOne({ id: creatorId });
 
+      // ToDo : Add Error if !teamId
       if (
+        createBookingInput.withTeam &&
         createBookingInput.withTeam === true &&
         creator.teamId &&
         creator.role !== UserRole.Individual
@@ -171,8 +173,11 @@ export class BookingService {
     }
   }
 
+  // ToDo : Add getBookingsByPlaceId
+
   // Fix It
   // Change user -> creatorId
+  // Change name : getMyBookings
   async getBookings(user: User): Promise<GetBookingsOutput> {
     try {
       const bookings = await this.bookingRepo.find({
@@ -461,14 +466,14 @@ export class BookingService {
         inUse: true,
       });
 
-      if (withTeam === true) {
-        const team = await this.teamRepo.findOne({ id: creator.teamId });
-        if (!team) {
+      if (withTeam && withTeam === true) {
+        if (!creator.teamId) {
           return {
             ok: false,
             error: 'Team not found',
           };
         }
+        const team = await this.teamRepo.findOne({ id: creator.teamId });
         booking.team = team;
       }
 

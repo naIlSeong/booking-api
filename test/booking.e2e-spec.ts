@@ -9,6 +9,11 @@ const user = {
   password: 'password',
 };
 
+const otherUser = {
+  username: 'otherUsername',
+  password: 'otherPassword',
+};
+
 const admin = {
   username: 'admin',
   password: 'adminPassword',
@@ -22,10 +27,12 @@ const christmasBooking = {
 const TEAM_NAME = 'teamName';
 const LOCATION = 'location';
 const PLACE = 'place';
+const OTHER_PLACE = 'otherPlace';
 
 describe('BookingModule (e2e)', () => {
   let app: INestApplication;
   let jwtToken: string;
+  let otherJwtToken: string;
   let adminToken: string;
 
   const publicTest = (query: string) =>
@@ -39,6 +46,11 @@ describe('BookingModule (e2e)', () => {
     request(app.getHttpServer())
       .post('/graphql')
       .set('x-jwt', adminToken)
+      .send({ query });
+  const otherPrivateTest = (query: string) =>
+    request(app.getHttpServer())
+      .post('/graphql')
+      .set('x-jwt', otherJwtToken)
       .send({ query });
 
   beforeAll(async () => {
@@ -137,6 +149,46 @@ describe('BookingModule (e2e)', () => {
         });
     });
 
+    it('Create other user', () => {
+      return publicTest(`
+        mutation {
+            createUser(input: {
+              username: "${otherUser.username}"
+              password: "${otherUser.password}"
+            }) {
+              ok
+              error
+            }
+          }
+        `).expect(200);
+    });
+
+    it('Login & save other user token', () => {
+      return publicTest(`
+        mutation {
+            login(input: {
+              username: "${otherUser.username}"
+              password: "${otherUser.password}"
+            }) {
+              ok
+              error
+              token
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                login: { token },
+              },
+            },
+          } = res;
+          otherJwtToken = token;
+        });
+    });
+
     it('Create location', () => {
       return adminPrivateTest(`
           mutation {
@@ -167,6 +219,31 @@ describe('BookingModule (e2e)', () => {
             createPlace(input: {
               locationId: 1
               placeName: "${PLACE}"
+            }) {
+              ok
+              error
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createPlace: { ok },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+        });
+    });
+
+    it('Create other place', () => {
+      return adminPrivateTest(`
+          mutation {
+            createPlace(input: {
+              locationId: 1
+              placeName: "${OTHER_PLACE}"
             }) {
               ok
               error
@@ -423,7 +500,138 @@ describe('BookingModule (e2e)', () => {
     });
   });
 
-  it.todo('createInUse');
+  describe('createInUse', () => {
+    it('Error: Place not found', () => {
+      return privateTest(`
+          mutation {
+            createInUse(input: {
+              placeId: 999
+              withTeam: true	
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Place not found');
+        });
+    });
+
+    it('Error: Place not available', () => {
+      return privateTest(`
+          mutation {
+            createInUse(input: {
+              placeId: 2
+              withTeam: true	
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Place not available');
+        });
+    });
+
+    it('Error: Team not found', () => {
+      return otherPrivateTest(`
+          mutation {
+            createInUse(input: {
+              placeId: 1
+              withTeam: true	
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Team not found');
+        });
+    });
+
+    it('Create inUse', () => {
+      return privateTest(`
+          mutation {
+            createInUse(input: {
+              placeId: 1
+              withTeam: true	
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+
+    it('Error: Already booking exist', () => {
+      return privateTest(`
+          mutation {
+            createInUse(input: {
+              placeId: 1
+              withTeam: true	
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Already booking exist');
+        });
+    });
+  });
+
   it.todo('extendInUse');
   it.todo('finishInUse');
 

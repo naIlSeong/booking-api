@@ -11,7 +11,7 @@ export class CreateBookingInput extends PickType(Booking, [
   placeId: number;
 
   @Field((type) => Boolean, { defaultValue: false })
-  withTeam: boolean;
+  withTeam?: boolean;
 }
 
 @ObjectType()
