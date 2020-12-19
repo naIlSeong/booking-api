@@ -632,7 +632,157 @@ describe('BookingModule (e2e)', () => {
     });
   });
 
-  it.todo('extendInUse');
+  describe('extendInUse', () => {
+    it('Error: Booking not found', () => {
+      return otherPrivateTest(`
+          mutation {
+            extendInUse(input: {
+              bookingId: 999
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                extendInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Booking not found');
+        });
+    });
+
+    it("Error: You can't do this", () => {
+      return otherPrivateTest(`
+          mutation {
+            extendInUse(input: {
+              bookingId: 2
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                extendInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual("You can't do this");
+        });
+    });
+
+    it('Error: Not in use', () => {
+      return privateTest(`
+          mutation {
+            extendInUse(input: {
+              bookingId: 1
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                extendInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Not in use');
+        });
+    });
+
+    it("Error: Can't extend now", () => {
+      return privateTest(`
+          mutation {
+            extendInUse(input: {
+              bookingId: 2
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                extendInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual("Can't extend now");
+        });
+    });
+
+    it.todo('Error: Already finished');
+
+    it('Edit booking for test', () => {
+      return adminPrivateTest(`
+      mutation {
+        editBookingForTest(bookingId: 2) {
+          ok
+          error
+        }
+      }
+      `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editBookingForTest: { ok },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+        });
+    });
+
+    it('Extend inUse', () => {
+      return privateTest(`
+          mutation {
+            extendInUse(input: {
+              bookingId: 2
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                extendInUse: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+  });
+
   it.todo('finishInUse');
 
   it.todo('editBooking');

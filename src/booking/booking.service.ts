@@ -1,5 +1,6 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CoreOutput } from 'src/common/dto/common.dto';
 import { Place } from 'src/place/entity/place.entity';
 import { Team } from 'src/team/entity/team.entity';
 import { User, UserRole } from 'src/user/entity/user.entity';
@@ -525,10 +526,9 @@ export class BookingService {
     }
   }
 
-  // Change creator -> creatorId
   async extendInUse(
     { bookingId }: ExtendInUseInput,
-    creator: User,
+    creatorId: number,
   ): Promise<ExtendInUseOutput> {
     try {
       const booking = await this.bookingRepo.findOne({ id: bookingId });
@@ -538,7 +538,7 @@ export class BookingService {
           error: 'Booking not found',
         };
       }
-      if (booking.creatorId !== creator.id) {
+      if (booking.creatorId !== creatorId) {
         return {
           ok: false,
           error: "You can't do this",
@@ -557,6 +557,7 @@ export class BookingService {
         };
       }
       const now: Date = new Date();
+      // 10m
       if (booking.endAt.valueOf() - now.valueOf() > 600000) {
         return {
           ok: false,
@@ -564,6 +565,7 @@ export class BookingService {
         };
       }
 
+      // 30m
       booking.endAt = new Date(booking.endAt.getTime() + 1800000);
       await this.bookingRepo.save(booking);
       return {
@@ -612,6 +614,23 @@ export class BookingService {
       booking.inUse = false;
       booking.isFinished = true;
       booking.endAt = new Date();
+      await this.bookingRepo.save(booking);
+      return {
+        ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async editBookingForTest(bookingId: number): Promise<CoreOutput> {
+    try {
+      const booking = await this.bookingRepo.findOne({ id: bookingId });
+      booking.startAt = new Date(booking.startAt.valueOf() - 3300000);
+      booking.endAt = new Date(booking.endAt.valueOf() - 3300000);
       await this.bookingRepo.save(booking);
       return {
         ok: true,

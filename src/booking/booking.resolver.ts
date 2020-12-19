@@ -2,6 +2,7 @@ import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
 import { Cron } from '@nestjs/schedule';
 import { AuthUser } from 'src/auth/auth.decorator';
 import { Role } from 'src/auth/role.decorator';
+import { CoreOutput } from 'src/common/dto/common.dto';
 import { User } from 'src/user/entity/user.entity';
 import { BookingService } from './booking.service';
 import {
@@ -87,6 +88,14 @@ export class BookingResolver {
     return this.bookingService.editBooking(editBookingInput, representative);
   }
 
+  @Mutation((returns) => CoreOutput)
+  @Role(['Admin'])
+  editBookingForTest(
+    @Args('bookingId') bookingId: number,
+  ): Promise<CoreOutput> {
+    return this.bookingService.editBookingForTest(bookingId);
+  }
+
   @Mutation((returns) => CreateInUseOutput)
   @Role(['User'])
   createInUse(
@@ -105,9 +114,9 @@ export class BookingResolver {
   @Role(['User'])
   extendInUse(
     @Args('input') extendInUseInput: ExtendInUseInput,
-    @AuthUser() representative: User,
+    @AuthUser() creator: User,
   ): Promise<ExtendInUseOutput> {
-    return this.bookingService.extendInUse(extendInUseInput, representative);
+    return this.bookingService.extendInUse(extendInUseInput, creator.id);
   }
 
   @Mutation((returns) => FinishInUseOutput)
