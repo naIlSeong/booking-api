@@ -151,7 +151,7 @@ export class BookingService {
   }: BookingDetailInput): Promise<BookingDetailOutput> {
     try {
       const booking = await this.bookingRepo.findOne(bookingId, {
-        relations: ['creator', 'place', 'team'],
+        relations: ['place', 'team'],
       });
       if (!booking) {
         return {
@@ -171,6 +171,8 @@ export class BookingService {
     }
   }
 
+  // Fix It
+  // Change user -> creatorId
   async getBookings(user: User): Promise<GetBookingsOutput> {
     try {
       const bookings = await this.bookingRepo.find({
@@ -284,6 +286,7 @@ export class BookingService {
     }
   }
 
+  //Change creator -> creatorId
   async editBooking(
     { startAt, endAt, bookingId, placeId, userId, teamId }: EditBookingInput,
     creator: User,
@@ -415,6 +418,7 @@ export class BookingService {
     }
   }
 
+  // Change creator -> creatorId
   async createInUse(
     { placeId, withTeam }: CreateInUseInput,
     creator: User,
@@ -516,6 +520,7 @@ export class BookingService {
     }
   }
 
+  // Change creator -> creatorId
   async extendInUse(
     { bookingId }: ExtendInUseInput,
     creator: User,
@@ -567,6 +572,7 @@ export class BookingService {
     }
   }
 
+  // Change creator -> creatorId
   async finishInUse(
     { bookingId }: FinishInUseInput,
     creator: User,

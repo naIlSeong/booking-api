@@ -349,11 +349,86 @@ describe('BookingModule (e2e)', () => {
     });
   });
 
-  it.todo('bookingDetail');
-  it.todo('getBookings');
-  it.todo('deleteBooking');
-  it.todo('editBooking');
+  describe('bookingDetail', () => {
+    it('Error: Booking not found', () => {
+      return privateTest(`
+          query {
+            bookingDetail(input: {
+              bookingId: 999
+            }) {
+              ok
+              error
+              booking {
+                creatorId
+                place {
+                  placeName
+                }
+              }
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                bookingDetail: { ok, error, booking },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Booking not found');
+          expect(booking).toEqual(null);
+        });
+    });
+
+    it('Find booking ID : 1', () => {
+      return privateTest(`
+          query {
+            bookingDetail(input: {
+              bookingId: 1
+            }) {
+              ok
+              error
+              booking {
+                creatorId
+                place {
+                  placeName
+                }
+              }
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                bookingDetail: {
+                  ok,
+                  error,
+                  booking: {
+                    creatorId,
+                    place: { placeName },
+                  },
+                },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+          expect(creatorId).toEqual(1);
+          expect(placeName).toEqual(PLACE);
+        });
+    });
+  });
+
   it.todo('createInUse');
   it.todo('extendInUse');
   it.todo('finishInUse');
+
+  it.todo('editBooking');
+
+  it.todo('getBookings');
+  it.todo('deleteBooking');
 });
