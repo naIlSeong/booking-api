@@ -11,6 +11,8 @@ const admin = {
 
 const LOCATION = 'location';
 const PLACE = 'place';
+const OTHER_PLACE = 'otherPlace';
+const NEW_PLACE = 'newPlace';
 
 describe('PlaceModule (e2e)', () => {
   let app: INestApplication;
@@ -257,6 +259,20 @@ describe('PlaceModule (e2e)', () => {
         });
     });
 
+    it('Create other place', () => {
+      return privateTest(`
+          mutation {
+            createPlace(input: {
+              locationId: 1
+              placeName: "${OTHER_PLACE}"
+            }) {
+              ok
+              error
+            }
+          }
+       `).expect(200);
+    });
+
     it('Error: Already place exist', () => {
       return privateTest(`
           mutation {
@@ -336,7 +352,148 @@ describe('PlaceModule (e2e)', () => {
     });
   });
 
-  it.todo('editPlace');
+  describe('editPlace', () => {
+    it('Error: Location not found', () => {
+      return privateTest(`
+          mutation {
+            editPlace(input: {
+              locationId: 999
+              placeId: 999
+              placeName: "${PLACE}"
+              inUse: false
+            }) {
+              ok
+              error
+            }
+         }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editPlace: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Location not found');
+        });
+    });
+
+    it('Error: Place not found', () => {
+      return privateTest(`
+          mutation {
+            editPlace(input: {
+              locationId: 1
+              placeId: 999
+              placeName: "${PLACE}"
+              inUse: false
+            }) {
+              ok
+              error
+            }
+         }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editPlace: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Place not found');
+        });
+    });
+
+    it('Error: Same place name', () => {
+      return privateTest(`
+          mutation {
+            editPlace(input: {
+              locationId: 1
+              placeId: 1
+              placeName: "${PLACE}"
+              inUse: false
+            }) {
+              ok
+              error
+            }
+         }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editPlace: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Same place name');
+        });
+    });
+
+    it('Error: Already exist place name', () => {
+      return privateTest(`
+          mutation {
+            editPlace(input: {
+              locationId: 1
+              placeId: 1
+              placeName: "${OTHER_PLACE}"
+              inUse: false
+            }) {
+              ok
+              error
+            }
+         }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editPlace: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Already exist place name');
+        });
+    });
+
+    it('Change place name & inUse: false', () => {
+      return privateTest(`
+          mutation {
+            editPlace(input: {
+              locationId: 1
+              placeId: 1
+              placeName: "${NEW_PLACE}"
+              inUse: false
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editPlace: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+  });
+
   it.todo('deletePlace');
   it.todo('placeDetail');
 });

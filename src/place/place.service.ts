@@ -110,6 +110,22 @@ export class PlaceService {
           error: 'Place not found',
         };
       }
+      const existPlaceName = await this.placeRepo.findOne({
+        placeName: editPlaceInput.placeName,
+        placeLocation,
+      });
+      if (existPlaceName) {
+        if (existPlaceName.id === place.id) {
+          return {
+            ok: false,
+            error: 'Same place name',
+          };
+        }
+        return {
+          ok: false,
+          error: 'Already exist place name',
+        };
+      }
       await this.placeRepo.save([
         { id: editPlaceInput.placeId, placeLocation, ...editPlaceInput },
       ]);
