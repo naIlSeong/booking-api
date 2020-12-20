@@ -19,9 +19,37 @@ const admin = {
   password: 'adminPassword',
 };
 
+// inUse 1
+// Place Id : 1
+// Booking Id : 2
+// Creator : private
+// isFinished : true
+
+// inUse 2
+// Place Id : 1
+// Booking Id : 3
+// Creator : private
+// isFinished : false
+
+// Place Id : 2
+// Booking Id : 4
+// Creator : otherPrivate
+// startAt: 2020-12-24T10:00
+// endAt: 2020-12-24T13:00
+
+// Place Id : 1
+// Booking Id : 1
+// Creator : private
 const christmasBooking = {
   startAt: '2020-12-25T13:00',
   endAt: '2020-12-25T15:00',
+};
+
+// Place Id : 2
+// Booking Id : 1
+const newBooking = {
+  startAt: '2020-12-24T13:00',
+  endAt: '2020-12-24T15:00',
 };
 
 const TEAM_NAME = 'teamName';
@@ -933,8 +961,325 @@ describe('BookingModule (e2e)', () => {
     });
   });
 
-  it.todo('editBooking');
+  describe('editBooking', () => {
+    // Defence
+    it('Error: Booking not found', () => {
+      return privateTest(`
+          mutation {
+            editBooking(input: {
+              placeId: 2
+              bookingId: 999
+              startAt: "${newBooking.startAt}"
+              endAt: "${newBooking.endAt}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editBooking: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Booking not found');
+        });
+    });
 
-  it.todo('getBookings');
+    it("Error: You can't do this", () => {
+      return otherPrivateTest(`
+          mutation {
+            editBooking(input: {
+              placeId: 2
+              bookingId: 1
+              startAt: "${newBooking.startAt}"
+              endAt: "${newBooking.endAt}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editBooking: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual("You can't do this");
+        });
+    });
+
+    it('Create inUse in place id : 1', () => {
+      return privateTest(`
+        mutation {
+          createInUse(input: {
+            placeId: 1
+            withTeam: true
+          }) {
+            ok
+            error
+          }
+        }
+      `).expect(200);
+    });
+
+    it("Error: You can't do this in use", () => {
+      return privateTest(`
+          mutation {
+            editBooking(input: {
+              placeId: 2
+              bookingId: 3
+              startAt: "${newBooking.startAt}"
+              endAt: "${newBooking.endAt}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editBooking: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual("You can't do this in use");
+        });
+    });
+
+    // Change Place
+    it('Error: Place not found', () => {
+      return privateTest(`
+          mutation {
+            editBooking(input: {
+              placeId: 999
+              bookingId: 1
+              startAt: "${newBooking.startAt}"
+              endAt: "${newBooking.endAt}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editBooking: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Place not found');
+        });
+    });
+
+    it('Error: Place not available', () => {
+      return privateTest(`
+          mutation {
+            editBooking(input: {
+              placeId: 2
+              bookingId: 1
+              startAt: "${newBooking.startAt}"
+              endAt: "${newBooking.endAt}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editBooking: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Place not available');
+        });
+    });
+
+    it('Change place(ID : 2) isAvailable : true', () => {
+      return adminPrivateTest(`
+          mutation {
+            toggleIsAvailable(input: {
+              id: 2
+            }) {
+              ok
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) =>
+          expect(res.body.data.toggleIsAvailable.ok).toEqual(true),
+        );
+    });
+
+    it('Create other booking', () => {
+      return otherPrivateTest(`
+          mutation {
+            createBooking(input: {
+              placeId: 2
+              withTeam: false
+              startAt: "2020-12-24T10:00"
+              endAt: "2020-12-24T13:00"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createBooking: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+        });
+    });
+
+    it('Error: Already booking exist', () => {
+      return privateTest(`
+          mutation {
+            editBooking(input: {
+              placeId: 2
+              bookingId: 1
+              startAt: "2020-12-24T12:00"
+              endAt: "2020-12-24T14:00"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editBooking: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Already booking exist');
+        });
+    });
+
+    it('Edit booking', () => {
+      return privateTest(`
+          mutation {
+            editBooking(input: {
+              placeId: 2
+              bookingId: 1
+              startAt: "${newBooking.startAt}"
+              endAt: "${newBooking.endAt}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editBooking: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+  });
+
+  describe('getBookings', () => {
+    it('Find bookings creator ID : 1', () => {
+      return privateTest(`
+          query {
+            getBookings {
+              ok
+              error
+              bookings {
+                id
+                startAt
+                endAt
+                isFinished
+              }
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                getBookings: { ok, error, bookings },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+          expect(bookings.length).toEqual(3);
+          expect(bookings[0].id).toEqual(2);
+          expect(bookings[0].isFinished).toEqual(true);
+        });
+    });
+
+    it('Find bookings creator ID : 2', () => {
+      return otherPrivateTest(`
+          query {
+            getBookings {
+              ok
+              error
+              bookings {
+                startAt
+                endAt
+                isFinished
+              }
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                getBookings: { ok, error, bookings },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+          expect(bookings.length).toEqual(1);
+        });
+    });
+  });
+
   it.todo('deleteBooking');
 });

@@ -51,8 +51,8 @@ export class BookingResolver {
 
   @Query((returns) => GetBookingsOutput)
   @Role(['Any'])
-  getBookings(@AuthUser() user: User): Promise<GetBookingsOutput> {
-    return this.bookingService.getBookings(user);
+  getBookings(@AuthUser() creator: User): Promise<GetBookingsOutput> {
+    return this.bookingService.getBookings(creator.id);
   }
 
   // @Mutation((returns) => RegisterParticipantOutput)
@@ -83,9 +83,9 @@ export class BookingResolver {
   @Role(['User'])
   editBooking(
     @Args('input') editBookingInput: EditBookingInput,
-    @AuthUser() representative: User,
+    @AuthUser() creator: User,
   ): Promise<EditBookingOutput> {
-    return this.bookingService.editBooking(editBookingInput, representative);
+    return this.bookingService.editBooking(editBookingInput, creator.id);
   }
 
   @Mutation((returns) => CoreOutput)
@@ -100,9 +100,9 @@ export class BookingResolver {
   @Role(['User'])
   createInUse(
     @Args('input') createInUseInput: CreateInUseInput,
-    @AuthUser() user: User,
+    @AuthUser() creator: User,
   ): Promise<CreateInUseOutput> {
-    return this.bookingService.createInUse(createInUseInput, user);
+    return this.bookingService.createInUse(createInUseInput, creator.id);
   }
 
   @Cron('0 */10 * * * *')

@@ -14,16 +14,10 @@ export class EditBookingInput extends PartialType(
   PickType(Booking, ['startAt', 'endAt']),
 ) {
   @Field((type) => Int)
-  bookingId?: number;
+  bookingId: number;
 
   @Field((type) => Int, { nullable: true })
   placeId?: number;
-
-  @Field((type) => Int, { nullable: true })
-  userId?: number;
-
-  @Field((type) => Int, { nullable: true })
-  teamId?: number;
 }
 
 @ObjectType()

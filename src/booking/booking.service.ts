@@ -179,24 +179,17 @@ export class BookingService {
   // Fix It
   // Change user -> creatorId
   // Change name : getMyBookings
-  async getBookings(user: User): Promise<GetBookingsOutput> {
+  async getBookings(creatorId: number): Promise<GetBookingsOutput> {
     try {
       const bookings = await this.bookingRepo.find({
         relations: ['place', 'team'],
         where: {
-          representative: user,
+          creatorId,
         },
         order: {
           startAt: 'ASC',
         },
       });
-
-      if (!bookings) {
-        return {
-          ok: false,
-          error: 'Booking not found',
-        };
-      }
       return {
         ok: true,
         bookings,
@@ -292,10 +285,10 @@ export class BookingService {
     }
   }
 
-  //Change creator -> creatorId
+  // ToDo : withTeam Change
   async editBooking(
-    { startAt, endAt, bookingId, placeId, userId, teamId }: EditBookingInput,
-    creator: User,
+    { startAt, endAt, bookingId, placeId }: EditBookingInput,
+    creatorId: number,
   ): Promise<EditBookingOutput> {
     try {
       const booking = await this.bookingRepo.findOne({
@@ -310,7 +303,7 @@ export class BookingService {
           error: 'Booking not found',
         };
       }
-      if (booking.creatorId !== creator.id) {
+      if (booking.creatorId !== creatorId) {
         return {
           ok: false,
           error: "You can't do this",
@@ -323,9 +316,10 @@ export class BookingService {
         };
       }
 
+      let place = booking.place;
       // 장소 변경
       if (placeId) {
-        const place = await this.placeRepo.findOne({ id: placeId });
+        place = await this.placeRepo.findOne({ id: placeId });
         if (!place) {
           return {
             ok: false,
@@ -338,37 +332,20 @@ export class BookingService {
             error: 'Place not available',
           };
         }
-        // check startAt & endAt
-        if (!startAt && !endAt) {
-          startAt = booking.startAt;
-          endAt = booking.endAt;
-        }
-        const { startEarlyOrEqual, startInMiddle } = await this.checkSchedule(
-          booking.place,
-          startAt,
-          endAt,
-        );
-        if (startEarlyOrEqual.length !== 0 || startInMiddle.length !== 0) {
-          if (
-            this.isMyBooking(bookingId, startEarlyOrEqual, startInMiddle) ===
-            false
-          ) {
-            return {
-              ok: false,
-              error: 'Already booking exist',
-            };
-          }
-        }
-        booking.startAt = startAt;
-        booking.endAt = endAt;
         booking.place = place;
       }
 
-      // 시간 변경
+      // 장소만 변경, 시간은 변경 X
+      if (placeId && !startAt && !endAt) {
+        startAt = booking.startAt;
+        endAt = booking.endAt;
+      }
+
+      // 시간 변경 or 스케줄 체크
       if (startAt && endAt) {
         // check startAt & endAt
         const { startEarlyOrEqual, startInMiddle } = await this.checkSchedule(
-          booking.place,
+          place,
           startAt,
           endAt,
         );
@@ -386,30 +363,6 @@ export class BookingService {
         booking.startAt = startAt;
         booking.endAt = endAt;
       }
-
-      // representative 변경
-      // if (userId) {
-      //   const newRepresentative = await this.userRepo.findOne({ id: userId });
-      //   if (!newRepresentative) {
-      //     return {
-      //       ok: false,
-      //       error: 'User not found',
-      //     };
-      //   }
-      //   // ToDo : Only member can be new creator
-      //   booking.creator = newRepresentative;
-      // }
-
-      // if (teamId) {
-      //   const team = await this.teamRepo.findOne({ id: teamId });
-      //   if (!team) {
-      //     return {
-      //       ok: false,
-      //       error: 'Team not found',
-      //     };
-      //   }
-      //   booking.team = team;
-      // }
 
       await this.bookingRepo.save(booking);
 
@@ -424,10 +377,9 @@ export class BookingService {
     }
   }
 
-  // Change creator -> creatorId
   async createInUse(
     { placeId, withTeam }: CreateInUseInput,
-    creator: User,
+    creatorId: number,
   ): Promise<CreateInUseOutput> {
     try {
       const place = await this.placeRepo.findOne({ id: placeId });
@@ -463,11 +415,12 @@ export class BookingService {
         startAt,
         endAt,
         place,
-        creatorId: creator.id,
+        creatorId,
         inUse: true,
       });
 
       if (withTeam && withTeam === true) {
+        const creator = await this.userRepo.findOne({ id: creatorId });
         if (!creator.teamId) {
           return {
             ok: false,

@@ -37,10 +37,9 @@ Sports facility reservation service
   - [x] Team
   - [x] Place
   - [x] JWT
-  - Booking
+  - [ ] Booking
 - [ ] E2E Test
-  - User
-  - Team
-  - Place
-  - JWT
-  - Booking
+  - [x] User
+  - [x] Team
+  - [x] Place
+  - [ ] Booking
