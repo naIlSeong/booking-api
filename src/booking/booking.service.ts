@@ -82,12 +82,12 @@ export class BookingService {
   }
 
   async createBooking(
-    createBookingInput: CreateBookingInput,
+    { startAt, endAt, placeId, withTeam }: CreateBookingInput,
     creatorId: number,
   ): Promise<CreateBookingOutput> {
     try {
       const place = await this.placeRepo.findOne({
-        id: createBookingInput.placeId,
+        id: placeId,
       });
       if (!place) {
         return {
@@ -103,8 +103,8 @@ export class BookingService {
       }
       const { startEarlyOrEqual, startInMiddle } = await this.checkSchedule(
         place,
-        createBookingInput.startAt,
-        createBookingInput.endAt,
+        startAt,
+        endAt,
       );
       const existBooking =
         startEarlyOrEqual.length !== 0 || startInMiddle.length !== 0;
@@ -116,16 +116,17 @@ export class BookingService {
       }
 
       const booking = this.bookingRepo.create({
-        creatorId: creatorId,
+        creatorId,
         place,
-        ...createBookingInput,
+        startAt,
+        endAt,
       });
       const creator = await this.userRepo.findOne({ id: creatorId });
 
       // ToDo : Add Error if !teamId
       if (
-        createBookingInput.withTeam &&
-        createBookingInput.withTeam === true &&
+        withTeam &&
+        withTeam === true &&
         creator.teamId &&
         creator.role !== UserRole.Individual
       ) {
