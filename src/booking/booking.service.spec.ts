@@ -453,8 +453,8 @@ describe('BookingService', () => {
       ]);
       bookingRepo.find.mockResolvedValueOnce([
         { id: otherEditBookingArgs.bookingId },
-        { id: 999 },
-        { id: 777 },
+        { id: 99 },
+        { id: 77 },
       ]);
 
       const result = await service.editBooking(
@@ -476,7 +476,113 @@ describe('BookingService', () => {
     });
   });
 
-  it.todo('createInUse');
+  describe('createInUse', () => {
+    const createInUseArgs = {
+      placeId: 1,
+      withTeam: true,
+    };
+
+    it('Error: Place not found', async () => {
+      placeRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.createInUse(createInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Place not found',
+      });
+    });
+
+    it('Error: Place not available', async () => {
+      placeRepo.findOne.mockResolvedValue({
+        id: createInUseArgs.placeId,
+        isAvailable: false,
+      });
+
+      const result = await service.createInUse(createInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Place not available',
+      });
+    });
+
+    it('Error: Already booking exist', async () => {
+      placeRepo.findOne.mockResolvedValue({
+        id: createInUseArgs.placeId,
+        isAvailable: true,
+      });
+
+      bookingRepo.find.mockResolvedValueOnce([{ id: 999 }]);
+      bookingRepo.find.mockResolvedValueOnce([]);
+      bookingRepo.find.mockResolvedValueOnce([]);
+
+      const result = await service.createInUse(createInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already booking exist',
+      });
+    });
+    it('Error: Team not found', async () => {
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: createInUseArgs.placeId,
+        isAvailable: true,
+      });
+
+      bookingRepo.find.mockResolvedValueOnce([]);
+      bookingRepo.find.mockResolvedValueOnce([{ id: 999 }]);
+      bookingRepo.find.mockResolvedValueOnce([{ id: 888 }]);
+
+      bookingRepo.create.mockReturnValue({
+        id: 1,
+      });
+      userRepo.findOne.mockResolvedValueOnce({
+        id: mockCreator.id,
+        teamId: null,
+      });
+
+      const result = await service.createInUse(createInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Team not found',
+      });
+    });
+
+    it('Success to create inUse', async () => {
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: createInUseArgs.placeId,
+        isAvailable: true,
+      });
+
+      bookingRepo.find.mockResolvedValueOnce([]);
+      bookingRepo.find.mockResolvedValueOnce([]);
+      bookingRepo.find.mockResolvedValueOnce([]);
+
+      bookingRepo.create.mockReturnValue({
+        id: 1,
+      });
+      userRepo.findOne.mockResolvedValueOnce({
+        id: mockCreator.id,
+        teamId: 1,
+      });
+      teamRepo.findOne.mockResolvedValueOnce({ id: 1 });
+
+      const result = await service.createInUse(createInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: true,
+      });
+      expect(bookingRepo.create).toBeCalled();
+      expect(bookingRepo.save).toBeCalled();
+    });
+
+    it('Error: Unexpected Error', async () => {
+      placeRepo.findOne.mockRejectedValue(new Error());
+      const result = await service.createInUse(createInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
+
   it.todo('checkInUse');
   it.todo('extendInUse');
   it.todo('finishInUse');
