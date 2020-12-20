@@ -86,8 +86,6 @@ describe('BookingService', () => {
     expect(startInMiddle).toEqual([{ id: 1 }, { id: 3 }]);
   });
 
-  it.todo('isMyBooking');
-
   describe('createBooking', () => {
     const createBookingArgs = {
       startAt: new Date('2020-12-25T13:00'),
@@ -309,7 +307,175 @@ describe('BookingService', () => {
     });
   });
 
-  it.todo('editBooking');
+  describe('editBooking', () => {
+    const editBookingArgs = {
+      placeId: 1,
+      bookingId: 2,
+      startAt: new Date('2020-12-25T14:00'),
+      endAt: new Date('2020-12-25T16:00'),
+    };
+
+    const otherEditBookingArgs = {
+      placeId: 1,
+      bookingId: 2,
+    };
+
+    it('Booking not found', async () => {
+      bookingRepo.findOne.mockResolvedValue(null);
+      const result = await service.editBooking(editBookingArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Booking not found',
+      });
+    });
+
+    it("You can't do this", async () => {
+      bookingRepo.findOne.mockResolvedValue({
+        id: editBookingArgs.bookingId,
+        creatorId: 999,
+      });
+      const result = await service.editBooking(editBookingArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: "You can't do this",
+      });
+    });
+
+    it("You can't do this in use", async () => {
+      bookingRepo.findOne.mockResolvedValue({
+        id: editBookingArgs.bookingId,
+        creatorId: mockCreator.id,
+        inUse: true,
+      });
+      const result = await service.editBooking(editBookingArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: "You can't do this in use",
+      });
+    });
+
+    it('Place not found', async () => {
+      bookingRepo.findOne.mockResolvedValueOnce({
+        id: editBookingArgs.bookingId,
+        creatorId: mockCreator.id,
+        inUse: false,
+      });
+      placeRepo.findOne.mockResolvedValueOnce(null);
+
+      const result = await service.editBooking(editBookingArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Place not found',
+      });
+    });
+
+    it('Place not available', async () => {
+      bookingRepo.findOne.mockResolvedValueOnce({
+        id: editBookingArgs.bookingId,
+        creatorId: mockCreator.id,
+        inUse: false,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: editBookingArgs.placeId,
+        isAvailable: false,
+      });
+
+      const result = await service.editBooking(editBookingArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Place not available',
+      });
+    });
+
+    it('Already booking exist', async () => {
+      bookingRepo.findOne.mockResolvedValueOnce({
+        id: editBookingArgs.bookingId,
+        creatorId: mockCreator.id,
+        inUse: false,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: editBookingArgs.placeId,
+        isAvailable: true,
+      });
+
+      bookingRepo.find.mockResolvedValueOnce([{ id: 999 }]);
+      bookingRepo.find.mockResolvedValueOnce([{ id: 998 }]);
+      bookingRepo.find.mockResolvedValueOnce([{ id: 997 }]);
+
+      const result = await service.editBooking(editBookingArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already booking exist',
+      });
+    });
+
+    it('Success to edit booking', async () => {
+      bookingRepo.findOne.mockResolvedValueOnce({
+        id: editBookingArgs.bookingId,
+        creatorId: mockCreator.id,
+        inUse: false,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: editBookingArgs.placeId,
+        isAvailable: true,
+      });
+
+      bookingRepo.find.mockResolvedValueOnce([]);
+      bookingRepo.find.mockResolvedValueOnce([
+        { id: editBookingArgs.bookingId },
+      ]);
+      bookingRepo.find.mockResolvedValueOnce([
+        { id: editBookingArgs.bookingId },
+        { id: 999 },
+        { id: 777 },
+      ]);
+
+      const result = await service.editBooking(editBookingArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: true,
+      });
+    });
+
+    it('Success to edit booking only place', async () => {
+      bookingRepo.findOne.mockResolvedValueOnce({
+        id: otherEditBookingArgs.bookingId,
+        creatorId: mockCreator.id,
+        inUse: false,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: otherEditBookingArgs.placeId,
+        isAvailable: true,
+      });
+
+      bookingRepo.find.mockResolvedValueOnce([]);
+      bookingRepo.find.mockResolvedValueOnce([
+        { id: otherEditBookingArgs.bookingId },
+      ]);
+      bookingRepo.find.mockResolvedValueOnce([
+        { id: otherEditBookingArgs.bookingId },
+        { id: 999 },
+        { id: 777 },
+      ]);
+
+      const result = await service.editBooking(
+        otherEditBookingArgs,
+        mockCreator.id,
+      );
+      expect(result).toEqual({
+        ok: true,
+      });
+    });
+
+    it('Unexpected Error', async () => {
+      bookingRepo.findOne.mockRejectedValue(new Error());
+      const result = await service.editBooking(editBookingArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
+
   it.todo('createInUse');
   it.todo('checkInUse');
   it.todo('extendInUse');
