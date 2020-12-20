@@ -124,6 +124,67 @@ describe('UserService', () => {
     });
   });
 
+  describe('createAdmin', () => {
+    const createAdminArgs = {
+      username: 'mockUsername',
+      password: 'mockPassword',
+    };
+
+    it('shoudl fail on exist admin', async () => {
+      userRepo.findOne.mockResolvedValueOnce({
+        id: 1,
+        role: 'Admin',
+      });
+
+      const result = await service.createAdmin(createAdminArgs);
+      expect(userRepo.findOne).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already exist admin',
+      });
+    });
+
+    it('shoudl fail on exist username', async () => {
+      userRepo.findOne.mockResolvedValueOnce(null);
+      userRepo.findOne.mockResolvedValueOnce({
+        id: 1,
+        username: createAdminArgs.username,
+      });
+
+      const result = await service.createAdmin(createAdminArgs);
+      expect(userRepo.findOne).toHaveBeenCalledTimes(2);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already exist username',
+      });
+    });
+
+    it('should create admin', async () => {
+      userRepo.findOne.mockResolvedValueOnce(null);
+      userRepo.findOne.mockResolvedValueOnce(null);
+      userRepo.create.mockReturnValue({ ...createAdminArgs, role: 'Admin' });
+      userRepo.save.mockResolvedValue({ ...createAdminArgs, role: 'Admin' });
+
+      const result = await service.createAdmin(createAdminArgs);
+      expect(userRepo.findOne).toHaveBeenCalledTimes(2);
+      expect(userRepo.create).toHaveBeenCalledTimes(1);
+      expect(userRepo.save).toHaveBeenCalledTimes(1);
+      expect(result).toEqual({
+        ok: true,
+      });
+    });
+
+    it('should fail on exception', async () => {
+      userRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.createAdmin(createAdminArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
+
   describe('login', () => {
     const loginArgs = {
       username: 'mockUsername',
