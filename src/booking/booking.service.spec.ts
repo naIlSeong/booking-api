@@ -1,5 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
+import { async } from 'rxjs';
 import { Place } from 'src/place/entity/place.entity';
 import { Team } from 'src/team/entity/team.entity';
 import { User, UserRole } from 'src/user/entity/user.entity';
@@ -64,7 +65,27 @@ describe('BookingService', () => {
     expect(service).toBeDefined();
   });
 
-  it.todo('checkSchedule');
+  it('checkSchedule', async () => {
+    let place: Place;
+    bookingRepo.find.mockResolvedValueOnce([{ id: 6 }]);
+    bookingRepo.find.mockResolvedValueOnce([
+      { id: 1 },
+      { id: 2 },
+      { id: 3 },
+      { id: 4 },
+    ]);
+    bookingRepo.find.mockResolvedValueOnce([{ id: 1 }, { id: 3 }]);
+
+    const { startEarlyOrEqual, startInMiddle } = await service.checkSchedule(
+      place,
+      new Date('2020-12-25T01:00'),
+      new Date('2020-12-25T02:00'),
+    );
+    expect(startEarlyOrEqual.length).toEqual(1);
+    expect(startInMiddle.length).toEqual(2);
+    expect(startInMiddle).toEqual([{ id: 1 }, { id: 3 }]);
+  });
+
   it.todo('isMyBooking');
 
   describe('createBooking', () => {
