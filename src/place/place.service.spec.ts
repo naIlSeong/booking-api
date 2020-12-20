@@ -153,6 +153,10 @@ describe('PlaceService', () => {
       placeId: 1,
     };
 
+    const existPlaceArgs = {
+      id: 2,
+    };
+
     it('should fail if location not found', async () => {
       locationRepo.findOne.mockResolvedValue(null);
 
@@ -173,6 +177,42 @@ describe('PlaceService', () => {
       expect(result).toEqual({
         ok: false,
         error: 'Place not found',
+      });
+    });
+
+    it('should fail if same place name', async () => {
+      locationRepo.findOne.mockResolvedValueOnce({
+        id: editPlaceArgs.locationId,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: editPlaceArgs.placeId,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: editPlaceArgs.placeId,
+      });
+
+      const result = await service.editPlace(editPlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Same place name',
+      });
+    });
+
+    it('should fail if already exist place name', async () => {
+      locationRepo.findOne.mockResolvedValueOnce({
+        id: editPlaceArgs.locationId,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: editPlaceArgs.placeId,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: existPlaceArgs.id,
+      });
+
+      const result = await service.editPlace(editPlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already exist place name',
       });
     });
 
