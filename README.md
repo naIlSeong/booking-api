@@ -42,4 +42,4 @@ Sports facility reservation service
   - [x] User
   - [x] Team
   - [x] Place
-  - [ ] Booking
+  - [x] Booking

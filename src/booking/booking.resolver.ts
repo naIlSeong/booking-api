@@ -22,10 +22,6 @@ import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
 import { ExtendInUseInput, ExtendInUseOutput } from './dto/extend-in-use.dto';
 import { FinishInUseInput, FinishInUseOutput } from './dto/finish-in-use.dto';
 import { GetBookingsOutput } from './dto/get-bookings.dto';
-import {
-  RegisterParticipantInput,
-  RegisterParticipantOutput,
-} from './dto/register-participant.dto';
 import { Booking } from './entity/booking.entity';
 
 @Resolver((of) => Booking)
@@ -55,28 +51,13 @@ export class BookingResolver {
     return this.bookingService.getBookings(creator.id);
   }
 
-  // @Mutation((returns) => RegisterParticipantOutput)
-  // @Role(['User'])
-  // registerParticipant(
-  //   @Args('input') registerParticipantInput: RegisterParticipantInput,
-  //   @AuthUser() representative: User,
-  // ): Promise<RegisterParticipantOutput> {
-  //   return this.bookingService.registerParticipant(
-  //     registerParticipantInput,
-  //     representative,
-  //   );
-  // }
-
   @Mutation((returns) => DeleteBookingOutput)
   @Role(['User'])
   deleteBooking(
     @Args('input') deleteBookingInput: DeleteBookingInput,
-    @AuthUser() representative: User,
+    @AuthUser() creator: User,
   ): Promise<DeleteBookingOutput> {
-    return this.bookingService.deleteBooking(
-      deleteBookingInput,
-      representative,
-    );
+    return this.bookingService.deleteBooking(deleteBookingInput, creator.id);
   }
 
   @Mutation((returns) => EditBookingOutput)

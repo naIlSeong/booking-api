@@ -22,10 +22,6 @@ import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
 import { ExtendInUseInput, ExtendInUseOutput } from './dto/extend-in-use.dto';
 import { FinishInUseInput, FinishInUseOutput } from './dto/finish-in-use.dto';
 import { GetBookingsOutput } from './dto/get-bookings.dto';
-import {
-  RegisterParticipantInput,
-  RegisterParticipantOutput,
-} from './dto/register-participant.dto';
 import { Booking } from './entity/booking.entity';
 
 @Injectable()
@@ -202,71 +198,19 @@ export class BookingService {
     }
   }
 
-  // async registerParticipant(
-  //   { participantId, bookingId }: RegisterParticipantInput,
-  //   creator: User,
-  // ): Promise<RegisterParticipantOutput> {
-  //   try {
-  //     const booking = await this.bookingRepo.findOne(
-  //       {
-  //         id: bookingId,
-  //       },
-  //       { relations: ['creator', 'participants'] },
-  //     );
-  //     if (!booking) {
-  //       return {
-  //         ok: false,
-  //         error: 'Booking not found',
-  //       };
-  //     }
-  //     if (booking.creator.id !== creator.id) {
-  //       return {
-  //         ok: false,
-  //         error: "You can't do this",
-  //       };
-  //     }
-  //     if (booking.inUse === true) {
-  //       return {
-  //         ok: false,
-  //         error: "You can't do this in use",
-  //       };
-  //     }
-  //     const participant = await this.userRepo.findOne({ id: participantId });
-  //     if (!participant) {
-  //       return {
-  //         ok: false,
-  //         error: 'User not found',
-  //       };
-  //     }
-  //     booking.participants.push(participant);
-  //     await this.bookingRepo.save(booking);
-  //     return {
-  //       ok: true,
-  //     };
-  //   } catch (error) {
-  //     return {
-  //       ok: false,
-  //       error: 'Unexpected Error',
-  //     };
-  //   }
-  // }
-
   async deleteBooking(
     { bookingId }: DeleteBookingInput,
-    creator: User,
+    creatorId: number,
   ): Promise<DeleteBookingOutput> {
     try {
-      const booking = await this.bookingRepo.findOne({
-        where: { id: bookingId },
-        relations: ['creator'],
-      });
+      const booking = await this.bookingRepo.findOne({ id: bookingId });
       if (!booking) {
         return {
           ok: false,
           error: 'Booking not found',
         };
       }
-      if (booking.creatorId !== creator.id) {
+      if (booking.creatorId !== creatorId) {
         return {
           ok: false,
           error: "You can't do this",

@@ -1281,5 +1281,80 @@ describe('BookingModule (e2e)', () => {
     });
   });
 
-  it.todo('deleteBooking');
+  describe('deleteBooking', () => {
+    it('Error: Booking not found', () => {
+      return otherPrivateTest(`
+          mutation {
+            deleteBooking(input: {
+              bookingId: 999
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                deleteBooking: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Booking not found');
+        });
+    });
+
+    it("Error: You can't do this", () => {
+      return otherPrivateTest(`
+          mutation {
+            deleteBooking(input: {
+              bookingId: 1
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                deleteBooking: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual("You can't do this");
+        });
+    });
+
+    it('Delete booking ID : 1', () => {
+      return privateTest(`
+          mutation {
+            deleteBooking(input: {
+              bookingId: 1
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                deleteBooking: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+  });
 });
