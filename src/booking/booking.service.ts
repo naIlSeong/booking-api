@@ -225,7 +225,7 @@ export class BookingService {
     } catch (error) {
       return {
         ok: false,
-        error,
+        error: 'Unexpected Error',
       };
     }
   }
