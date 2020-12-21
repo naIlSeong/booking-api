@@ -1,6 +1,5 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { async } from 'rxjs';
 import { Place } from 'src/place/entity/place.entity';
 import { Team } from 'src/team/entity/team.entity';
 import { User, UserRole } from 'src/user/entity/user.entity';
@@ -320,7 +319,7 @@ describe('BookingService', () => {
       bookingId: 2,
     };
 
-    it('Booking not found', async () => {
+    it('Error: Booking not found', async () => {
       bookingRepo.findOne.mockResolvedValue(null);
       const result = await service.editBooking(editBookingArgs, mockCreator.id);
       expect(result).toEqual({
@@ -329,7 +328,7 @@ describe('BookingService', () => {
       });
     });
 
-    it("You can't do this", async () => {
+    it("Error: You can't do this", async () => {
       bookingRepo.findOne.mockResolvedValue({
         id: editBookingArgs.bookingId,
         creatorId: 999,
@@ -341,7 +340,7 @@ describe('BookingService', () => {
       });
     });
 
-    it("You can't do this in use", async () => {
+    it("Error: You can't do this in use", async () => {
       bookingRepo.findOne.mockResolvedValue({
         id: editBookingArgs.bookingId,
         creatorId: mockCreator.id,
@@ -354,7 +353,7 @@ describe('BookingService', () => {
       });
     });
 
-    it('Place not found', async () => {
+    it('Error: Place not found', async () => {
       bookingRepo.findOne.mockResolvedValueOnce({
         id: editBookingArgs.bookingId,
         creatorId: mockCreator.id,
@@ -369,7 +368,7 @@ describe('BookingService', () => {
       });
     });
 
-    it('Place not available', async () => {
+    it('Error: Place not available', async () => {
       bookingRepo.findOne.mockResolvedValueOnce({
         id: editBookingArgs.bookingId,
         creatorId: mockCreator.id,
@@ -387,7 +386,7 @@ describe('BookingService', () => {
       });
     });
 
-    it('Already booking exist', async () => {
+    it('Error: Already booking exist', async () => {
       bookingRepo.findOne.mockResolvedValueOnce({
         id: editBookingArgs.bookingId,
         creatorId: mockCreator.id,
@@ -430,35 +429,11 @@ describe('BookingService', () => {
         { id: 777 },
       ]);
 
-      const result = await service.editBooking(editBookingArgs, mockCreator.id);
-      expect(result).toEqual({
-        ok: true,
-      });
-    });
-
-    it('Success to edit booking only place', async () => {
-      bookingRepo.findOne.mockResolvedValueOnce({
-        id: otherEditBookingArgs.bookingId,
-        creatorId: mockCreator.id,
-        inUse: false,
-      });
-      placeRepo.findOne.mockResolvedValueOnce({
-        id: otherEditBookingArgs.placeId,
-        isAvailable: true,
-      });
-
-      bookingRepo.find.mockResolvedValueOnce([]);
-      bookingRepo.find.mockResolvedValueOnce([
-        { id: otherEditBookingArgs.bookingId },
-      ]);
-      bookingRepo.find.mockResolvedValueOnce([
-        { id: otherEditBookingArgs.bookingId },
-        { id: 99 },
-        { id: 77 },
-      ]);
-
       const result = await service.editBooking(
-        otherEditBookingArgs,
+        {
+          placeId: editBookingArgs.placeId,
+          bookingId: editBookingArgs.bookingId,
+        },
         mockCreator.id,
       );
       expect(result).toEqual({
@@ -466,7 +441,7 @@ describe('BookingService', () => {
       });
     });
 
-    it('Unexpected Error', async () => {
+    it('Error: Unexpected Error', async () => {
       bookingRepo.findOne.mockRejectedValue(new Error());
       const result = await service.editBooking(editBookingArgs, mockCreator.id);
       expect(result).toEqual({
@@ -521,6 +496,7 @@ describe('BookingService', () => {
         error: 'Already booking exist',
       });
     });
+
     it('Error: Team not found', async () => {
       placeRepo.findOne.mockResolvedValueOnce({
         id: createInUseArgs.placeId,

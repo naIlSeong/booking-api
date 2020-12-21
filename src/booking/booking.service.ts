@@ -280,34 +280,30 @@ export class BookingService {
         booking.place = place;
       }
 
-      // 장소만 변경, 시간은 변경 X
-      if (placeId && !startAt && !endAt) {
+      // 시간 변경 or 스케줄 체크
+      // check startAt & endAt
+      if (!startAt && !endAt) {
         startAt = booking.startAt;
         endAt = booking.endAt;
       }
-
-      // 시간 변경 or 스케줄 체크
-      if (startAt && endAt) {
-        // check startAt & endAt
-        const { startEarlyOrEqual, startInMiddle } = await this.checkSchedule(
-          place,
-          startAt,
-          endAt,
-        );
-        if (startEarlyOrEqual.length !== 0 || startInMiddle.length !== 0) {
-          if (
-            this.isMyBooking(bookingId, startEarlyOrEqual, startInMiddle) ===
-            false
-          ) {
-            return {
-              ok: false,
-              error: 'Already booking exist',
-            };
-          }
+      const { startEarlyOrEqual, startInMiddle } = await this.checkSchedule(
+        place,
+        startAt,
+        endAt,
+      );
+      if (startEarlyOrEqual.length !== 0 || startInMiddle.length !== 0) {
+        if (
+          this.isMyBooking(bookingId, startEarlyOrEqual, startInMiddle) ===
+          false
+        ) {
+          return {
+            ok: false,
+            error: 'Already booking exist',
+          };
         }
-        booking.startAt = startAt;
-        booking.endAt = endAt;
       }
+      booking.startAt = startAt;
+      booking.endAt = endAt;
 
       await this.bookingRepo.save(booking);
 
