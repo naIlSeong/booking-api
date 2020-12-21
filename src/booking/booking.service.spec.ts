@@ -740,6 +740,32 @@ describe('BookingService', () => {
     });
   });
 
-  it.todo('editBookingForTest');
   it.todo('checkInUse');
+
+  describe('editBookingForTest', () => {
+    const mockBookingId = 98;
+
+    it('Advance 55minutes', async () => {
+      bookingRepo.findOne.mockResolvedValue({
+        id: mockBookingId,
+        startAt: new Date(),
+        endAt: new Date(new Date().valueOf() + 1800000),
+      });
+
+      const result = await service.editBookingForTest(mockBookingId);
+      expect(result).toEqual({
+        ok: true,
+      });
+      expect(bookingRepo.save).toBeCalled();
+    });
+
+    it('Error: Unexpected Error', async () => {
+      bookingRepo.findOne.mockRejectedValue(new Error());
+      const result = await service.editBookingForTest(mockBookingId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
 });
