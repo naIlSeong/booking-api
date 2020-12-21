@@ -559,8 +559,107 @@ describe('BookingService', () => {
     });
   });
 
-  it.todo('checkInUse');
-  it.todo('extendInUse');
+  describe('extendInUse', () => {
+    const extendInUseArgs = {
+      bookingId: 5,
+    };
+
+    it('Error: Booking not found', async () => {
+      bookingRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.extendInUse(extendInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Booking not found',
+      });
+    });
+
+    it("Error: You can't do this", async () => {
+      bookingRepo.findOne.mockResolvedValue({
+        id: extendInUseArgs.bookingId,
+        creatorId: 78,
+      });
+
+      const result = await service.extendInUse(extendInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: "You can't do this",
+      });
+    });
+
+    it('Error: Already finished', async () => {
+      bookingRepo.findOne.mockResolvedValue({
+        id: extendInUseArgs.bookingId,
+        creatorId: mockCreator.id,
+        isFinished: true,
+      });
+
+      const result = await service.extendInUse(extendInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already finished',
+      });
+    });
+
+    it('Error: Not in use', async () => {
+      bookingRepo.findOne.mockResolvedValue({
+        id: extendInUseArgs.bookingId,
+        creatorId: mockCreator.id,
+        isFinished: false,
+        inUse: false,
+      });
+
+      const result = await service.extendInUse(extendInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Not in use',
+      });
+    });
+
+    it("Error: Can't extend now", async () => {
+      bookingRepo.findOne.mockResolvedValue({
+        id: extendInUseArgs.bookingId,
+        creatorId: mockCreator.id,
+        isFinished: false,
+        inUse: true,
+        endAt: new Date(new Date().valueOf() + 1800000),
+      });
+
+      const result = await service.extendInUse(extendInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: "Can't extend now",
+      });
+    });
+
+    it('Extend 30minutes', async () => {
+      bookingRepo.findOne.mockResolvedValue({
+        id: extendInUseArgs.bookingId,
+        creatorId: mockCreator.id,
+        isFinished: false,
+        inUse: true,
+        endAt: new Date(new Date().valueOf() + 300000),
+      });
+
+      const result = await service.extendInUse(extendInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: true,
+      });
+      expect(bookingRepo.save).toBeCalled();
+    });
+
+    it('Error: Unexpected Error', async () => {
+      bookingRepo.findOne.mockRejectedValue(new Error());
+      const result = await service.extendInUse(extendInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
+
   it.todo('finishInUse');
+
   it.todo('editBookingForTest');
+  it.todo('checkInUse');
 });
