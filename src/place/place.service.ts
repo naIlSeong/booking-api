@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { CoreOutput } from 'src/common/dto/common.dto';
 import { Repository } from 'typeorm';
 import {
   CreateLocationInput,
@@ -27,6 +28,30 @@ export class PlaceService {
     @InjectRepository(PlaceLocation)
     private readonly locationRepo: Repository<PlaceLocation>,
   ) {}
+
+  private async findPlaceAndLocation(
+    locationId: number,
+    placeId: number,
+  ): Promise<{
+    error?: string;
+    place?: Place;
+    placeLocation?: PlaceLocation;
+  }> {
+    const placeLocation = await this.locationRepo.findOne({
+      id: locationId,
+    });
+    if (!placeLocation) {
+      return { error: 'Location not found' };
+    }
+    const place = await this.placeRepo.findOne({
+      id: placeId,
+      placeLocation,
+    });
+    if (!place) {
+      return { error: 'Place not found' };
+    }
+    return { placeLocation, place };
+  }
 
   async createPlace({
     placeName,
@@ -89,29 +114,25 @@ export class PlaceService {
     }
   }
 
-  async editPlace(editPlaceInput: EditPlaceInput): Promise<EditPlaceOutput> {
+  async editPlace({
+    placeName,
+    inUse,
+    placeId,
+    locationId,
+  }: EditPlaceInput): Promise<EditPlaceOutput> {
     try {
-      const placeLocation = await this.locationRepo.findOne({
-        id: editPlaceInput.locationId,
-      });
-      if (!placeLocation) {
+      const { placeLocation, place, error } = await this.findPlaceAndLocation(
+        locationId,
+        placeId,
+      );
+      if (error) {
         return {
           ok: false,
-          error: 'Location not found',
-        };
-      }
-      const place = await this.placeRepo.findOne({
-        id: editPlaceInput.placeId,
-        placeLocation,
-      });
-      if (!place) {
-        return {
-          ok: false,
-          error: 'Place not found',
+          error,
         };
       }
       const existPlaceName = await this.placeRepo.findOne({
-        placeName: editPlaceInput.placeName,
+        placeName,
         placeLocation,
       });
       if (existPlaceName) {
@@ -126,10 +147,7 @@ export class PlaceService {
           error: 'Already exist place name',
         };
       }
-      await this.placeRepo.save([
-        { id: editPlaceInput.placeId, placeLocation, ...editPlaceInput },
-      ]);
-
+      await this.placeRepo.save([{ ...place, inUse, placeName }]);
       return {
         ok: true,
       };
@@ -146,23 +164,14 @@ export class PlaceService {
     locationId,
   }: DeletePlaceInput): Promise<DeletePlaceOutput> {
     try {
-      const placeLocation = await this.locationRepo.findOne({
-        id: locationId,
-      });
-      if (!placeLocation) {
+      const { error, place } = await this.findPlaceAndLocation(
+        locationId,
+        placeId,
+      );
+      if (error) {
         return {
           ok: false,
-          error: 'Location not found',
-        };
-      }
-      const place = await this.placeRepo.findOne({
-        id: placeId,
-        placeLocation,
-      });
-      if (!place) {
-        return {
-          ok: false,
-          error: 'Place not found',
+          error,
         };
       }
       if (place.inUse === true || place.isAvailable === true) {
