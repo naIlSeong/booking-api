@@ -37,10 +37,11 @@ export class TeamService {
         teamName,
         members: [representative],
       });
-      representative.role = UserRole.Representative;
-      await this.userRepo.save(representative);
+      await this.userRepo.save({
+        ...representative,
+        role: UserRole.Representative,
+      });
       await this.teamRepo.save(team);
-
       return {
         ok: true,
       };
@@ -76,10 +77,8 @@ export class TeamService {
         };
       }
       team.members.push(member);
-      member.team = team;
-      member.role = UserRole.Member;
       await this.teamRepo.save(team);
-      await this.userRepo.save(member);
+      await this.userRepo.save({ ...member, team, role: UserRole.Member });
 
       return {
         ok: true,
@@ -114,9 +113,7 @@ export class TeamService {
           error: 'Same team name',
         };
       }
-
-      team.teamName = teamName;
-      await this.teamRepo.save(team);
+      await this.teamRepo.save({ ...team, teamName });
       return {
         ok: true,
       };
@@ -176,11 +173,13 @@ export class TeamService {
         where: { id: representative.teamId },
         relations: ['members'],
       });
+
       representative.role = UserRole.Individual;
       team.members.map(async (member) => {
         member.role = UserRole.Individual;
         await this.userRepo.save(member);
       });
+
       await this.userRepo.save(representative);
       await this.teamRepo.delete({ id: team.id });
       return {

@@ -31,8 +31,6 @@ export class UserService {
           error: 'Already exist username',
         };
       }
-      const user = this.userRepo.create({ username, password });
-
       if (studentId) {
         const existStudentId = await this.userRepo.findOne({ studentId });
         if (existStudentId) {
@@ -41,10 +39,10 @@ export class UserService {
             error: 'Already exist studentID',
           };
         }
-        user.studentId = studentId;
       }
-
-      await this.userRepo.save(user);
+      await this.userRepo.save(
+        this.userRepo.create({ username, password, studentId }),
+      );
       return {
         ok: true,
       };
@@ -109,10 +107,9 @@ export class UserService {
           error: 'Wrong password',
         };
       }
-      const token = this.jwtService.sign(user.id);
       return {
         ok: true,
-        token,
+        token: this.jwtService.sign(user.id),
       };
     } catch (error) {
       return {
@@ -208,7 +205,6 @@ export class UserService {
           error: 'User not found',
         };
       }
-
       return {
         ok: true,
         user,

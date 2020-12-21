@@ -91,8 +91,6 @@ describe('UserService', () => {
       });
 
       const result = await service.createUser(createUserArgs);
-      expect(userRepo.findOne).toHaveBeenCalledTimes(2);
-      expect(userRepo.create).toHaveBeenCalledTimes(1);
       expect(result).toEqual({
         ok: false,
         error: 'Already exist studentID',
@@ -105,9 +103,9 @@ describe('UserService', () => {
       userRepo.save.mockResolvedValue(createUserArgs);
 
       const result = await service.createUser(createUserArgs);
-      expect(userRepo.findOne).toHaveBeenCalledTimes(2);
-      expect(userRepo.create).toHaveBeenCalledTimes(1);
-      expect(userRepo.save).toHaveBeenCalledTimes(1);
+      expect(userRepo.findOne).toHaveBeenCalled();
+      expect(userRepo.create).toHaveBeenCalled();
+      expect(userRepo.save).toHaveBeenCalled();
       expect(result).toEqual({
         ok: true,
       });

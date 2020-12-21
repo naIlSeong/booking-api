@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CoreOutput } from 'src/common/dto/common.dto';
 import { Repository } from 'typeorm';
 import {
   CreateLocationInput,

@@ -31,7 +31,7 @@ Sports facility reservation service
   - [x] Delete team
 - [ ] Verify Student Email
       <br>
-- [ ] Refactoring
+- [x] Refactoring
 - [x] Unit Test
   - [x] User
   - [x] Team
