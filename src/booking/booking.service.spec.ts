@@ -740,7 +740,19 @@ describe('BookingService', () => {
     });
   });
 
-  it.todo('checkInUse');
+  describe('checkInUse', () => {
+    it('chechInUse', async () => {
+      bookingRepo.find.mockResolvedValueOnce([
+        { id: 1, inUse: false, isFinished: false },
+      ]);
+      bookingRepo.find.mockResolvedValueOnce([
+        { id: 2, inUse: true, isFinished: false },
+      ]);
+
+      await service.checkInUse();
+      expect(bookingRepo.save).toBeCalled();
+    });
+  });
 
   describe('editBookingForTest', () => {
     const mockBookingId = 98;

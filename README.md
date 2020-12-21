@@ -32,13 +32,13 @@ Sports facility reservation service
 - [ ] Verify Student Email
       <br>
 - [ ] Refactoring
-- [ ] Unit Test
+- [x] Unit Test
   - [x] User
   - [x] Team
   - [x] Place
   - [x] JWT
-  - [ ] Booking
-- [ ] E2E Test
+  - [x] Booking
+- [x] E2E Test
   - [x] User
   - [x] Team
   - [x] Place
