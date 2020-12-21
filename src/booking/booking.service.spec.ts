@@ -658,7 +658,87 @@ describe('BookingService', () => {
     });
   });
 
-  it.todo('finishInUse');
+  describe('finishInUse', () => {
+    const finishInUseArgs = {
+      bookingId: 11,
+    };
+
+    it('Error: Booking not found', async () => {
+      bookingRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.finishInUse(finishInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Booking not found',
+      });
+    });
+
+    it("Error: You can't to this", async () => {
+      bookingRepo.findOne.mockResolvedValue({
+        id: finishInUseArgs.bookingId,
+        creatorId: 67,
+      });
+
+      const result = await service.finishInUse(finishInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: "You can't to this",
+      });
+    });
+
+    it('Error: Already finished', async () => {
+      bookingRepo.findOne.mockResolvedValue({
+        id: finishInUseArgs.bookingId,
+        creatorId: mockCreator.id,
+        isFinished: true,
+      });
+
+      const result = await service.finishInUse(finishInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Already finished',
+      });
+    });
+
+    it('Error: Not in use', async () => {
+      bookingRepo.findOne.mockResolvedValue({
+        id: finishInUseArgs.bookingId,
+        creatorId: mockCreator.id,
+        isFinished: false,
+        inUse: false,
+      });
+
+      const result = await service.finishInUse(finishInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Not in use',
+      });
+    });
+
+    it('Finish inUse (booking)', async () => {
+      bookingRepo.findOne.mockResolvedValue({
+        id: finishInUseArgs.bookingId,
+        creatorId: mockCreator.id,
+        isFinished: false,
+        inUse: true,
+      });
+
+      const result = await service.finishInUse(finishInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: true,
+      });
+      expect(bookingRepo.save).toBeCalled();
+    });
+
+    it('Error: Unexpected Error', async () => {
+      bookingRepo.findOne.mockRejectedValue(new Error());
+      const result = await service.finishInUse(finishInUseArgs, mockCreator.id);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
 
   it.todo('editBookingForTest');
   it.todo('checkInUse');
