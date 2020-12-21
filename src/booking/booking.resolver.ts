@@ -21,7 +21,7 @@ import {
 import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
 import { ExtendInUseInput, ExtendInUseOutput } from './dto/extend-in-use.dto';
 import { FinishInUseInput, FinishInUseOutput } from './dto/finish-in-use.dto';
-import { GetBookingsOutput } from './dto/get-bookings.dto';
+import { GetMyBookingsOutput } from './dto/get-my-bookings.dto';
 import { Booking } from './entity/booking.entity';
 
 @Resolver((of) => Booking)
@@ -45,10 +45,10 @@ export class BookingResolver {
     return this.bookingService.bookingDetail(bookingDetailInput);
   }
 
-  @Query((returns) => GetBookingsOutput)
+  @Query((returns) => GetMyBookingsOutput)
   @Role(['Any'])
-  getBookings(@AuthUser() creator: User): Promise<GetBookingsOutput> {
-    return this.bookingService.getBookings(creator.id);
+  getMyBookings(@AuthUser() creator: User): Promise<GetMyBookingsOutput> {
+    return this.bookingService.getMyBookings(creator.id);
   }
 
   @Mutation((returns) => DeleteBookingOutput)

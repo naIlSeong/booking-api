@@ -21,7 +21,7 @@ import {
 import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
 import { ExtendInUseInput, ExtendInUseOutput } from './dto/extend-in-use.dto';
 import { FinishInUseInput, FinishInUseOutput } from './dto/finish-in-use.dto';
-import { GetBookingsOutput } from './dto/get-bookings.dto';
+import { GetMyBookingsOutput } from './dto/get-my-bookings.dto';
 import { Booking } from './entity/booking.entity';
 
 @Injectable()
@@ -37,47 +37,123 @@ export class BookingService {
     private readonly teamRepo: Repository<Team>,
   ) {}
 
-  async checkSchedule(place: Place, startAt: Date, endAt: Date) {
-    const startEarlyOrEqual = await this.bookingRepo.find({
+  private async isCreatableBooking(
+    place: Place,
+    startAt: Date,
+    endAt: Date,
+    isEdit: boolean,
+    bookingId?: number,
+  ): Promise<string> {
+    const startFirst = await this.bookingRepo.find({
       place,
       startAt: LessThanOrEqual(startAt),
       endAt: MoreThan(startAt),
     });
-    const startInMiddle1 = await this.bookingRepo.find({
+    const startLater1 = await this.bookingRepo.find({
       place,
       startAt: MoreThan(startAt),
     });
-    const startInMiddle2 = await this.bookingRepo.find({
+    const startLater2 = await this.bookingRepo.find({
       place,
       startAt: LessThan(endAt),
     });
-    const startInMiddle: Booking[] = [];
-    startInMiddle1.forEach((a) =>
-      startInMiddle2.forEach((b) => {
+
+    const startLater: Booking[] = [];
+    startLater1.forEach((a) =>
+      startLater2.forEach((b) => {
         if (a.id === b.id) {
-          startInMiddle.push(a);
+          startLater.push(a);
         }
       }),
     );
-    return { startEarlyOrEqual, startInMiddle };
+    const error = 'Already booking exist';
+    if (startFirst.length !== 0 || startLater.length !== 0) {
+      if (!isEdit) {
+        return error;
+      }
+      if (
+        (startFirst.length === 1 &&
+          startFirst[0].id === bookingId &&
+          startLater.length === 0) ||
+        (startFirst.length === 0 &&
+          startLater.length === 1 &&
+          startLater[0].id === bookingId) === false
+      ) {
+        return error;
+      }
+    }
+    return;
   }
 
-  isMyBooking(
-    bookingId: number,
-    startEarlyOrEqual: Booking[],
-    startInMiddle: Booking[],
-  ): boolean {
-    if (
-      (startEarlyOrEqual.length === 1 &&
-        startEarlyOrEqual[0].id === bookingId &&
-        startInMiddle.length === 0) ||
-      (startEarlyOrEqual.length === 0 &&
-        startInMiddle.length === 1 &&
-        startInMiddle[0].id === bookingId)
-    ) {
-      return true;
-    } else {
-      return false;
+  private async isAvailablePlace(
+    placeId: number,
+  ): Promise<{ error?: string; place?: Place }> {
+    const place = await this.placeRepo.findOne({
+      id: placeId,
+    });
+    if (!place) {
+      return { error: 'Place not found' };
+    }
+    if (place.isAvailable === false) {
+      return { error: 'Place not available' };
+    }
+    return { place };
+  }
+
+  private isCreatorsBooking(
+    booking: Booking,
+    creatorId: number,
+    checkState: boolean,
+  ): string {
+    if (!booking) {
+      return 'Booking not found';
+    }
+    if (booking.creatorId !== creatorId) {
+      return "You can't do this";
+    }
+    if (checkState) {
+      if (booking.isFinished === true) {
+        return 'Already finished';
+      }
+      if (booking.inUse === false) {
+        return 'Not in use';
+      }
+    }
+    return;
+  }
+
+  async checkInUse(): Promise<void> {
+    try {
+      const now = new Date();
+      const nowInUse = await this.bookingRepo.find({
+        startAt: LessThan(now),
+        endAt: MoreThan(now),
+      });
+      nowInUse.forEach(async (booking) => {
+        if (booking.inUse === false) {
+          if (booking.isFinished === false) {
+            booking.inUse = true;
+            await this.bookingRepo.save(booking);
+          }
+        }
+      });
+
+      const finishedInUse = await this.bookingRepo.find({
+        endAt: LessThan(now),
+        isFinished: false,
+      });
+      finishedInUse.forEach(async (booking) => {
+        if (booking.inUse === true) {
+          booking.inUse = false;
+        }
+        if (booking.isFinished === false) {
+          booking.isFinished = true;
+        }
+        await this.bookingRepo.save(booking);
+      });
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException();
     }
   }
 
@@ -86,44 +162,34 @@ export class BookingService {
     creatorId: number,
   ): Promise<CreateBookingOutput> {
     try {
-      const place = await this.placeRepo.findOne({
-        id: placeId,
-      });
-      if (!place) {
+      const { error, place } = await this.isAvailablePlace(placeId);
+      if (error) {
         return {
           ok: false,
-          error: 'Place not found',
+          error,
         };
       }
-      if (place.isAvailable === false) {
-        return {
-          ok: false,
-          error: 'Place not available',
-        };
-      }
-      const { startEarlyOrEqual, startInMiddle } = await this.checkSchedule(
+      const newError = await this.isCreatableBooking(
         place,
         startAt,
         endAt,
+        false,
       );
-      const existBooking =
-        startEarlyOrEqual.length !== 0 || startInMiddle.length !== 0;
-      if (existBooking) {
+      if (newError) {
         return {
           ok: false,
-          error: 'Already booking exist',
+          error: newError,
         };
       }
-
       const booking = this.bookingRepo.create({
         creatorId,
         place,
         startAt,
         endAt,
       });
-      const creator = await this.userRepo.findOne({ id: creatorId });
 
       // ToDo : Add Error if !teamId
+      const creator = await this.userRepo.findOne({ id: creatorId });
       if (
         withTeam &&
         withTeam === true &&
@@ -133,7 +199,6 @@ export class BookingService {
         const team = await this.teamRepo.findOne({ id: creator.teamId });
         booking.team = team;
       }
-
       await this.bookingRepo.save(booking);
       return {
         ok: true,
@@ -173,10 +238,7 @@ export class BookingService {
 
   // ToDo : Add getBookingsByPlaceId
 
-  // Fix It
-  // Change user -> creatorId
-  // Change name : getMyBookings
-  async getBookings(creatorId: number): Promise<GetBookingsOutput> {
+  async getMyBookings(creatorId: number): Promise<GetMyBookingsOutput> {
     try {
       const bookings = await this.bookingRepo.find({
         relations: ['place', 'team'],
@@ -205,20 +267,14 @@ export class BookingService {
   ): Promise<DeleteBookingOutput> {
     try {
       const booking = await this.bookingRepo.findOne({ id: bookingId });
-      if (!booking) {
+      const error = this.isCreatorsBooking(booking, creatorId, false);
+      if (error) {
         return {
           ok: false,
-          error: 'Booking not found',
-        };
-      }
-      if (booking.creatorId !== creatorId) {
-        return {
-          ok: false,
-          error: "You can't do this",
+          error,
         };
       }
       await this.bookingRepo.delete(bookingId);
-
       return {
         ok: true,
       };
@@ -242,16 +298,12 @@ export class BookingService {
         },
         relations: ['place'],
       });
-      if (!booking) {
+      let error: string;
+      error = this.isCreatorsBooking(booking, creatorId, false);
+      if (error) {
         return {
           ok: false,
-          error: 'Booking not found',
-        };
-      }
-      if (booking.creatorId !== creatorId) {
-        return {
-          ok: false,
-          error: "You can't do this",
+          error,
         };
       }
       if (booking.inUse === true) {
@@ -261,52 +313,36 @@ export class BookingService {
         };
       }
 
-      let place = booking.place;
-      // 장소 변경
       if (placeId) {
-        place = await this.placeRepo.findOne({ id: placeId });
-        if (!place) {
+        const { error, place } = await this.isAvailablePlace(placeId);
+        if (error) {
           return {
             ok: false,
-            error: 'Place not found',
-          };
-        }
-        if (place.isAvailable === false) {
-          return {
-            ok: false,
-            error: 'Place not available',
+            error,
           };
         }
         booking.place = place;
       }
-
-      // 시간 변경 or 스케줄 체크
-      // check startAt & endAt
+      const place = booking.place;
       if (!startAt && !endAt) {
         startAt = booking.startAt;
         endAt = booking.endAt;
       }
-      const { startEarlyOrEqual, startInMiddle } = await this.checkSchedule(
+
+      error = await this.isCreatableBooking(
         place,
         startAt,
         endAt,
+        true,
+        bookingId,
       );
-      if (startEarlyOrEqual.length !== 0 || startInMiddle.length !== 0) {
-        if (
-          this.isMyBooking(bookingId, startEarlyOrEqual, startInMiddle) ===
-          false
-        ) {
-          return {
-            ok: false,
-            error: 'Already booking exist',
-          };
-        }
+      if (error) {
+        return {
+          ok: false,
+          error,
+        };
       }
-      booking.startAt = startAt;
-      booking.endAt = endAt;
-
-      await this.bookingRepo.save(booking);
-
+      await this.bookingRepo.save({ ...booking, startAt, endAt });
       return {
         ok: true,
       };
@@ -323,32 +359,26 @@ export class BookingService {
     creatorId: number,
   ): Promise<CreateInUseOutput> {
     try {
-      const place = await this.placeRepo.findOne({ id: placeId });
-      if (!place) {
+      const { error, place } = await this.isAvailablePlace(placeId);
+      if (error) {
         return {
           ok: false,
-          error: 'Place not found',
+          error,
         };
       }
-      if (!place.isAvailable) {
-        return {
-          ok: false,
-          error: 'Place not available',
-        };
-      }
-
       const startAt: Date = new Date();
       const endAt: Date = new Date(startAt.getTime() + 3600000);
 
-      const { startEarlyOrEqual, startInMiddle } = await this.checkSchedule(
+      const newError = await this.isCreatableBooking(
         place,
         startAt,
         endAt,
+        false,
       );
-      if (startEarlyOrEqual.length !== 0 || startInMiddle.length !== 0) {
+      if (newError) {
         return {
           ok: false,
-          error: 'Already booking exist',
+          error: newError,
         };
       }
 
@@ -368,12 +398,9 @@ export class BookingService {
             error: 'Team not found',
           };
         }
-        const team = await this.teamRepo.findOne({ id: creator.teamId });
-        booking.team = team;
+        booking.team = await this.teamRepo.findOne({ id: creator.teamId });
       }
-
       await this.bookingRepo.save(booking);
-
       return {
         ok: true,
       };
@@ -382,41 +409,6 @@ export class BookingService {
         ok: false,
         error: 'Unexpected Error',
       };
-    }
-  }
-
-  async checkInUse(): Promise<void> {
-    try {
-      const now = new Date();
-      const nowInUse = await this.bookingRepo.find({
-        startAt: LessThan(now),
-        endAt: MoreThan(now),
-      });
-      nowInUse.forEach(async (booking) => {
-        if (booking.inUse === false) {
-          if (booking.isFinished === false) {
-            booking.inUse = true;
-            await this.bookingRepo.save(booking);
-          }
-        }
-      });
-
-      const finishedInUse = await this.bookingRepo.find({
-        endAt: LessThan(now),
-        isFinished: false,
-      });
-      finishedInUse.forEach(async (booking) => {
-        if (booking.inUse === true) {
-          booking.inUse = false;
-        }
-        if (booking.isFinished === false) {
-          booking.isFinished = true;
-        }
-        await this.bookingRepo.save(booking);
-      });
-    } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException();
     }
   }
 
@@ -426,32 +418,14 @@ export class BookingService {
   ): Promise<ExtendInUseOutput> {
     try {
       const booking = await this.bookingRepo.findOne({ id: bookingId });
-      if (!booking) {
+      const error = this.isCreatorsBooking(booking, creatorId, true);
+      if (error) {
         return {
           ok: false,
-          error: 'Booking not found',
-        };
-      }
-      if (booking.creatorId !== creatorId) {
-        return {
-          ok: false,
-          error: "You can't do this",
-        };
-      }
-      if (booking.isFinished === true) {
-        return {
-          ok: false,
-          error: 'Already finished',
-        };
-      }
-      if (booking.inUse === false) {
-        return {
-          ok: false,
-          error: 'Not in use',
+          error,
         };
       }
       const now: Date = new Date();
-      // 10m
       if (booking.endAt.valueOf() - now.valueOf() > 600000) {
         return {
           ok: false,
@@ -459,9 +433,10 @@ export class BookingService {
         };
       }
 
-      // 30m
-      booking.endAt = new Date(booking.endAt.getTime() + 1800000);
-      await this.bookingRepo.save(booking);
+      await this.bookingRepo.save({
+        ...booking,
+        endAt: new Date(booking.endAt.getTime() + 1800000),
+      });
       return {
         ok: true,
       };
@@ -473,42 +448,25 @@ export class BookingService {
     }
   }
 
-  // Change creator -> creatorId
   async finishInUse(
     { bookingId }: FinishInUseInput,
     creatorId: number,
   ): Promise<FinishInUseOutput> {
     try {
       const booking = await this.bookingRepo.findOne({ id: bookingId });
-      if (!booking) {
+      const error = this.isCreatorsBooking(booking, creatorId, true);
+      if (error) {
         return {
           ok: false,
-          error: 'Booking not found',
+          error,
         };
       }
-      if (booking.creatorId !== creatorId) {
-        return {
-          ok: false,
-          error: "You can't to this",
-        };
-      }
-      if (booking.isFinished === true) {
-        return {
-          ok: false,
-          error: 'Already finished',
-        };
-      }
-      if (booking.inUse === false) {
-        return {
-          ok: false,
-          error: 'Not in use',
-        };
-      }
-
-      booking.inUse = false;
-      booking.isFinished = true;
-      booking.endAt = new Date();
-      await this.bookingRepo.save(booking);
+      await this.bookingRepo.save({
+        ...booking,
+        inUse: false,
+        isFinished: true,
+        endAt: new Date(),
+      });
       return {
         ok: true,
       };

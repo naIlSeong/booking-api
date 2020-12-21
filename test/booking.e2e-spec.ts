@@ -835,7 +835,7 @@ describe('BookingModule (e2e)', () => {
         });
     });
 
-    it("Error: You can't to this", () => {
+    it("Error: You can't do this", () => {
       return otherPrivateTest(`
           mutation {
             finishInUse(input: {
@@ -856,7 +856,7 @@ describe('BookingModule (e2e)', () => {
             },
           } = res;
           expect(ok).toEqual(false);
-          expect(error).toEqual("You can't to this");
+          expect(error).toEqual("You can't do this");
         });
     });
 
@@ -1218,11 +1218,11 @@ describe('BookingModule (e2e)', () => {
     });
   });
 
-  describe('getBookings', () => {
+  describe('getMyBookings', () => {
     it('Find bookings creator ID : 1', () => {
       return privateTest(`
           query {
-            getBookings {
+            getMyBookings {
               ok
               error
               bookings {
@@ -1239,7 +1239,7 @@ describe('BookingModule (e2e)', () => {
           const {
             body: {
               data: {
-                getBookings: { ok, error, bookings },
+                getMyBookings: { ok, error, bookings },
               },
             },
           } = res;
@@ -1254,7 +1254,7 @@ describe('BookingModule (e2e)', () => {
     it('Find bookings creator ID : 2', () => {
       return otherPrivateTest(`
           query {
-            getBookings {
+            getMyBookings {
               ok
               error
               bookings {
@@ -1270,7 +1270,7 @@ describe('BookingModule (e2e)', () => {
           const {
             body: {
               data: {
-                getBookings: { ok, error, bookings },
+                getMyBookings: { ok, error, bookings },
               },
             },
           } = res;

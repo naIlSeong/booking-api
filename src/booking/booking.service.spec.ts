@@ -64,27 +64,6 @@ describe('BookingService', () => {
     expect(service).toBeDefined();
   });
 
-  it('checkSchedule', async () => {
-    let place: Place;
-    bookingRepo.find.mockResolvedValueOnce([{ id: 6 }]);
-    bookingRepo.find.mockResolvedValueOnce([
-      { id: 1 },
-      { id: 2 },
-      { id: 3 },
-      { id: 4 },
-    ]);
-    bookingRepo.find.mockResolvedValueOnce([{ id: 1 }, { id: 3 }]);
-
-    const { startEarlyOrEqual, startInMiddle } = await service.checkSchedule(
-      place,
-      new Date('2020-12-25T01:00'),
-      new Date('2020-12-25T02:00'),
-    );
-    expect(startEarlyOrEqual.length).toEqual(1);
-    expect(startInMiddle.length).toEqual(2);
-    expect(startInMiddle).toEqual([{ id: 1 }, { id: 3 }]);
-  });
-
   describe('createBooking', () => {
     const createBookingArgs = {
       startAt: new Date('2020-12-25T13:00'),
@@ -225,20 +204,20 @@ describe('BookingService', () => {
     });
   });
 
-  describe('getBookings', () => {
+  describe('getMyBookings', () => {
     it("Find creator's bookings", async () => {
       bookingRepo.find.mockResolvedValue([
         { id: 1, creatorId: mockCreator.id },
         { id: 2, creatorId: mockCreator.id },
       ]);
-      const result = await service.getBookings(mockCreator.id);
+      const result = await service.getMyBookings(mockCreator.id);
       expect(result.ok).toEqual(true);
       expect(result.bookings.length).toEqual(2);
     });
 
     it('Error: Unexpected Error', async () => {
       bookingRepo.find.mockRejectedValue(new Error());
-      const result = await service.getBookings(mockCreator.id);
+      const result = await service.getMyBookings(mockCreator.id);
       expect(result).toEqual({
         ok: false,
         error: 'Unexpected Error',
@@ -673,7 +652,7 @@ describe('BookingService', () => {
       });
     });
 
-    it("Error: You can't to this", async () => {
+    it("Error: You can't do this", async () => {
       bookingRepo.findOne.mockResolvedValue({
         id: finishInUseArgs.bookingId,
         creatorId: 67,
@@ -682,7 +661,7 @@ describe('BookingService', () => {
       const result = await service.finishInUse(finishInUseArgs, mockCreator.id);
       expect(result).toEqual({
         ok: false,
-        error: "You can't to this",
+        error: "You can't do this",
       });
     });
 

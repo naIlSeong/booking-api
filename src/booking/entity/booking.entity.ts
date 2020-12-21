@@ -2,17 +2,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
 import { CoreEntity } from 'src/common/entity/common.entity';
 import { Team } from 'src/team/entity/team.entity';
-import { User } from 'src/user/entity/user.entity';
-import {
-  BeforeInsert,
-  BeforeUpdate,
-  Column,
-  Entity,
-  JoinTable,
-  ManyToMany,
-  ManyToOne,
-  RelationId,
-} from 'typeorm';
+import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from 'typeorm';
 import { Place } from '../../place/entity/place.entity';
 
 @InputType('BookingInputType', { isAbstract: true })
@@ -33,17 +23,6 @@ export class Booking extends CoreEntity {
   @Field((type) => Int)
   @Column()
   creatorId: number;
-
-  // @RelationId((booking: Booking) => booking.representative)
-  // representativeId: number;
-
-  // @Field((type) => [User], { nullable: true })
-  // @ManyToMany((type) => User, { nullable: true })
-  // @JoinTable()
-  // participants?: User[];
-
-  // @RelationId((booking: Booking) => booking.participants)
-  // participantIds: number[];
 
   @Field((type) => Date)
   @Column()
