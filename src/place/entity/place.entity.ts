@@ -13,7 +13,9 @@ export class Place extends CoreEntity {
   placeName: string;
 
   @Field((type) => PlaceLocation)
-  @ManyToOne((type) => PlaceLocation, (placeLocation) => placeLocation.places)
+  @ManyToOne((type) => PlaceLocation, (placeLocation) => placeLocation.places, {
+    eager: true,
+  })
   placeLocation: PlaceLocation;
 
   @Field((type) => [Booking], { nullable: true })

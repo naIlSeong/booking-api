@@ -39,7 +39,16 @@ Sports facility reservation service
   - [x] JWT
   - [x] Booking
 - [x] E2E Test
+
   - [x] User
   - [x] Team
   - [x] Place
   - [x] Booking
+
+  ***
+
+  - [ ] Student ID validate !!
+  - [x] getMyBooking
+    - In progress
+    - Coming up next
+    - Finished

@@ -138,6 +138,18 @@ export class BookingService {
         }
       });
 
+      const canExtendBooking = await this.bookingRepo.find({
+        inUse: true,
+        isFinished: false,
+      });
+      canExtendBooking.forEach(async (booking) => {
+        if (booking.endAt.valueOf() - now.valueOf() <= 600000) {
+          booking.canExtend = true;
+        }
+        booking.canExtend = false;
+        await this.bookingRepo.save(booking);
+      });
+
       const finishedInUse = await this.bookingRepo.find({
         endAt: LessThan(now),
         isFinished: false,
@@ -238,12 +250,64 @@ export class BookingService {
 
   // ToDo : Add getBookingsByPlaceId
 
-  async getMyBookings(creatorId: number): Promise<GetMyBookingsOutput> {
+  async getInProgressBooking(creatorId: number): Promise<GetMyBookingsOutput> {
     try {
       const bookings = await this.bookingRepo.find({
         relations: ['place', 'team'],
         where: {
           creatorId,
+          isFinished: false,
+          inUse: true,
+        },
+        order: {
+          startAt: 'ASC',
+        },
+      });
+      return {
+        ok: true,
+        bookings,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async getComingUpBooking(creatorId: number): Promise<GetMyBookingsOutput> {
+    try {
+      const bookings = await this.bookingRepo.find({
+        relations: ['place', 'team'],
+        where: {
+          creatorId,
+          isFinished: false,
+          inUse: false,
+        },
+        order: {
+          startAt: 'ASC',
+        },
+      });
+      return {
+        ok: true,
+        bookings,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async getFinishedBooking(creatorId: number): Promise<GetMyBookingsOutput> {
+    try {
+      const bookings = await this.bookingRepo.find({
+        relations: ['place', 'team'],
+        where: {
+          creatorId,
+          isFinished: true,
+          inUse: false,
         },
         order: {
           startAt: 'ASC',
