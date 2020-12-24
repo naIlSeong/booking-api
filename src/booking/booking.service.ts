@@ -145,9 +145,11 @@ export class BookingService {
       canExtendBooking.forEach(async (booking) => {
         if (booking.endAt.valueOf() - now.valueOf() <= 600000) {
           booking.canExtend = true;
+          await this.bookingRepo.save(booking);
+        } else {
+          booking.canExtend = false;
+          await this.bookingRepo.save(booking);
         }
-        booking.canExtend = false;
-        await this.bookingRepo.save(booking);
       });
 
       const finishedInUse = await this.bookingRepo.find({
@@ -490,7 +492,10 @@ export class BookingService {
         };
       }
       const now: Date = new Date();
-      if (booking.endAt.valueOf() - now.valueOf() > 600000) {
+      if (
+        booking.endAt.valueOf() - now.valueOf() > 600000 &&
+        booking.canExtend === false
+      ) {
         return {
           ok: false,
           error: "Can't extend now",
@@ -500,6 +505,7 @@ export class BookingService {
       await this.bookingRepo.save({
         ...booking,
         endAt: new Date(booking.endAt.getTime() + 1800000),
+        canExtend: false,
       });
       return {
         ok: true,
