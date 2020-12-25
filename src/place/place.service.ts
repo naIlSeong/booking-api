@@ -9,6 +9,11 @@ import { CreatePlaceInput, CreatePlaceOutput } from './dto/create-place.dto';
 import { DeletePlaceInput, DeletePlaceOutput } from './dto/delete-place.dto';
 import { EditPlaceInput, EditPlaceOutput } from './dto/edit-place.dto';
 import {
+  GetAvailablePlaceInput,
+  GetAvailablePlaceOutput,
+} from './dto/get-available-place.dto';
+import { GetLocationOutput } from './dto/get-location.dto';
+import {
   LocationDetailInput,
   LocationDetailOutput,
 } from './dto/location-detail.dto';
@@ -260,6 +265,71 @@ export class PlaceService {
       return {
         ok: true,
         location,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async getLocation(): Promise<GetLocationOutput> {
+    try {
+      const locations = await this.locationRepo.find({
+        where: { isAvailable: true },
+        relations: ['places'],
+      });
+      if (!locations) {
+        return {
+          ok: false,
+          error: 'Location Not Found',
+        };
+      }
+      const availableLocation: PlaceLocation[] = [];
+
+      locations.forEach((location) => {
+        if (location.places.length !== 0) {
+          availableLocation.push(location);
+        }
+      });
+
+      return {
+        ok: true,
+        locations: availableLocation,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  // ToDo : Defensive Programming
+  async getAvailablePlace({
+    locationId,
+  }: GetAvailablePlaceInput): Promise<GetAvailablePlaceOutput> {
+    try {
+      const places = await this.placeRepo.find({
+        placeLocation: { id: locationId },
+        isAvailable: true,
+      });
+      if (!places) {
+        return {
+          ok: false,
+          error: 'Place Not Found',
+        };
+      }
+      if (places.length === 0) {
+        return {
+          ok: false,
+          error: 'Available Place Not Found',
+        };
+      }
+      return {
+        ok: true,
+        places,
       };
     } catch (error) {
       return {

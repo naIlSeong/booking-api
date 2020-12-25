@@ -204,26 +204,27 @@ describe('BookingService', () => {
     });
   });
 
-  describe('getMyBookings', () => {
-    it("Find creator's bookings", async () => {
-      bookingRepo.find.mockResolvedValue([
-        { id: 1, creatorId: mockCreator.id },
-        { id: 2, creatorId: mockCreator.id },
-      ]);
-      const result = await service.getMyBookings(mockCreator.id);
-      expect(result.ok).toEqual(true);
-      expect(result.bookings.length).toEqual(2);
-    });
+  // ToDo :
+  // describe('getMyBookings', () => {
+  //   it("Find creator's bookings", async () => {
+  //     bookingRepo.find.mockResolvedValue([
+  //       { id: 1, creatorId: mockCreator.id },
+  //       { id: 2, creatorId: mockCreator.id },
+  //     ]);
+  //     const result = await service.getMyBookings(mockCreator.id);
+  //     expect(result.ok).toEqual(true);
+  //     expect(result.bookings.length).toEqual(2);
+  //   });
 
-    it('Error: Unexpected Error', async () => {
-      bookingRepo.find.mockRejectedValue(new Error());
-      const result = await service.getMyBookings(mockCreator.id);
-      expect(result).toEqual({
-        ok: false,
-        error: 'Unexpected Error',
-      });
-    });
-  });
+  //   it('Error: Unexpected Error', async () => {
+  //     bookingRepo.find.mockRejectedValue(new Error());
+  //     const result = await service.getMyBookings(mockCreator.id);
+  //     expect(result).toEqual({
+  //       ok: false,
+  //       error: 'Unexpected Error',
+  //     });
+  //   });
+  // });
 
   describe('deleteBooking', () => {
     const deleteBookingArgs = {
@@ -601,6 +602,7 @@ describe('BookingService', () => {
         creatorId: mockCreator.id,
         isFinished: false,
         inUse: true,
+        canExtend: false,
         endAt: new Date(new Date().valueOf() + 1800000),
       });
 

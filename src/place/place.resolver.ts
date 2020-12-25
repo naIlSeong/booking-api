@@ -8,6 +8,11 @@ import { CreatePlaceInput, CreatePlaceOutput } from './dto/create-place.dto';
 import { DeletePlaceInput, DeletePlaceOutput } from './dto/delete-place.dto';
 import { EditPlaceInput, EditPlaceOutput } from './dto/edit-place.dto';
 import {
+  GetAvailablePlaceInput,
+  GetAvailablePlaceOutput,
+} from './dto/get-available-place.dto';
+import { GetLocationOutput } from './dto/get-location.dto';
+import {
   LocationDetailInput,
   LocationDetailOutput,
 } from './dto/location-detail.dto';
@@ -63,6 +68,14 @@ export class PlaceResolver {
   ): Promise<PlaceDetailOutput> {
     return this.placeService.placeDetail(placeDetailInput);
   }
+
+  @Query((returns) => GetAvailablePlaceOutput)
+  @Role(['Any'])
+  getAvailablePlace(
+    @Args('input') getAvailablePlaceInput: GetAvailablePlaceInput,
+  ): Promise<GetAvailablePlaceOutput> {
+    return this.placeService.getAvailablePlace(getAvailablePlaceInput);
+  }
 }
 
 @Resolver((of) => PlaceLocation)
@@ -83,5 +96,11 @@ export class LocationResolver {
     @Args('input') locationDetailInput: LocationDetailInput,
   ): Promise<LocationDetailOutput> {
     return this.placeService.locationDetail(locationDetailInput);
+  }
+
+  @Query((returns) => GetLocationOutput)
+  @Role(['Any'])
+  getLocation(): Promise<GetLocationOutput> {
+    return this.placeService.getLocation();
   }
 }

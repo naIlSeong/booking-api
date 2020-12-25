@@ -52,3 +52,5 @@ Sports facility reservation service
     - In progress
     - Coming up next
     - Finished
+
+- [x] findAvailablePlace with location
