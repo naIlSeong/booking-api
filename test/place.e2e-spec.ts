@@ -352,6 +352,36 @@ describe('PlaceModule (e2e)', () => {
     });
   });
 
+  describe('getLocation', () => {
+    it('Find available & has place location', () => {
+      return privateTest(`
+          query {
+            getLocation {
+              ok
+              error
+              locations {
+                id
+                isAvailable
+              }
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                getLocation: { ok, error, locations },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+          expect(locations).toEqual([{ id: 1, isAvailable: true }]);
+        });
+    });
+  });
+
   describe('editPlace', () => {
     it('Error: Location not found', () => {
       return privateTest(`
@@ -572,6 +602,38 @@ describe('PlaceModule (e2e)', () => {
           expect(inUse).toEqual(false);
           expect(isAvailable).toEqual(true);
           expect(locationName).toEqual(LOCATION);
+        });
+    });
+  });
+
+  describe('getAvailablePlace', () => {
+    it('Find available place by locationId', () => {
+      return privateTest(`
+      query {
+        getAvailablePlace(input: {
+          locationId: 1
+        }) {
+          ok
+          error
+          places {
+            id
+            isAvailable
+          }
+        }
+      }
+      `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                getAvailablePlace: { ok, error, places },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+          expect(places).toEqual([{ id: 1, isAvailable: true }]);
         });
     });
   });

@@ -280,12 +280,6 @@ export class PlaceService {
         where: { isAvailable: true },
         relations: ['places'],
       });
-      if (!locations) {
-        return {
-          ok: false,
-          error: 'Location not found',
-        };
-      }
       const availableLocation: PlaceLocation[] = [];
 
       locations.forEach((location) => {
@@ -315,12 +309,6 @@ export class PlaceService {
         placeLocation: { id: locationId },
         isAvailable: true,
       });
-      if (!places) {
-        return {
-          ok: false,
-          error: 'Place not found',
-        };
-      }
       if (places.length === 0) {
         return {
           ok: false,
