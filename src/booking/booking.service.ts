@@ -204,12 +204,13 @@ export class BookingService {
 
       // ToDo : Add Error if !teamId
       const creator = await this.userRepo.findOne({ id: creatorId });
-      if (
-        withTeam &&
-        withTeam === true &&
-        creator.teamId &&
-        creator.role !== UserRole.Individual
-      ) {
+      if (withTeam && withTeam === true) {
+        if (!creator.teamId || creator.role === UserRole.Individual) {
+          return {
+            ok: false,
+            error: 'Team not found',
+          };
+        }
         const team = await this.teamRepo.findOne({ id: creator.teamId });
         booking.team = team;
       }

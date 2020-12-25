@@ -373,6 +373,34 @@ describe('BookingModule (e2e)', () => {
         });
     });
 
+    it('Error: Team not found', () => {
+      return privateTest(`
+        mutation {
+            createBooking(input: {
+              placeId: 1
+              withTeam: true
+              startAt: "${christmasBooking.startAt}"
+              endAt: "${christmasBooking.endAt}"
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                createBooking: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Team not found');
+        });
+    });
+
     it('Create team', () => {
       return privateTest(`
           mutation {
