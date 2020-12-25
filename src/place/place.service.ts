@@ -283,7 +283,7 @@ export class PlaceService {
       if (!locations) {
         return {
           ok: false,
-          error: 'Location Not Found',
+          error: 'Location not found',
         };
       }
       const availableLocation: PlaceLocation[] = [];
@@ -318,13 +318,13 @@ export class PlaceService {
       if (!places) {
         return {
           ok: false,
-          error: 'Place Not Found',
+          error: 'Place not found',
         };
       }
       if (places.length === 0) {
         return {
           ok: false,
-          error: 'Available Place Not Found',
+          error: 'Available place not found',
         };
       }
       return {

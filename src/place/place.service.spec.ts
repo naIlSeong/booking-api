@@ -10,6 +10,7 @@ const mockRepository = {
   save: jest.fn(),
   create: jest.fn(),
   delete: jest.fn(),
+  find: jest.fn(),
 };
 
 type MockRepository<T = any> = Partial<Record<keyof Repository<T>, jest.Mock>>;
@@ -443,6 +444,90 @@ describe('PlaceService', () => {
       locationRepo.findOne.mockRejectedValue(new Error());
 
       const result = await service.locationDetail(locationDetailArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
+
+  describe('getLocation', () => {
+    it('Error: Location not found', async () => {
+      locationRepo.find.mockResolvedValue(null);
+
+      const result = await service.getLocation();
+      expect(result).toEqual({
+        ok: false,
+        error: 'Location not found',
+      });
+    });
+
+    it('Find available location', async () => {
+      locationRepo.find.mockResolvedValue([
+        { id: 1, isAvailable: true, places: [] },
+        { id: 2, isAvailable: true, places: [{ id: 1 }, { id: 2 }] },
+      ]);
+
+      const result = await service.getLocation();
+      expect(result).toEqual({
+        ok: true,
+        locations: [
+          { id: 2, isAvailable: true, places: [{ id: 1 }, { id: 2 }] },
+        ],
+      });
+    });
+
+    it('Error: Unexpected Error', async () => {
+      locationRepo.find.mockRejectedValue(new Error());
+
+      const result = await service.getLocation();
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
+
+  describe('getAvailablePlace', () => {
+    const getAvailablePlaceArgs = {
+      locationId: 1,
+    };
+
+    it('Error: Place not found', async () => {
+      placeRepo.find.mockResolvedValue(null);
+
+      const result = await service.getAvailablePlace(getAvailablePlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Place not found',
+      });
+    });
+
+    it('Error: Available place not found', async () => {
+      placeRepo.find.mockResolvedValue([]);
+
+      const result = await service.getAvailablePlace(getAvailablePlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Available place not found',
+      });
+    });
+
+    it('Find available place', async () => {
+      placeRepo.find.mockResolvedValue([{ id: 1 }, { id: 2 }, { id: 3 }]);
+
+      const result = await service.getAvailablePlace(getAvailablePlaceArgs);
+      expect(result).toEqual({
+        ok: true,
+        places: [{ id: 1 }, { id: 2 }, { id: 3 }],
+      });
+      expect(result.places.length).toEqual(3);
+    });
+
+    it('Error: Unexpected Error', async () => {
+      placeRepo.find.mockRejectedValue(new Error());
+
+      const result = await service.getAvailablePlace(getAvailablePlaceArgs);
       expect(result).toEqual({
         ok: false,
         error: 'Unexpected Error',
