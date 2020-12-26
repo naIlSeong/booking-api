@@ -18,6 +18,7 @@ const invalidUser = {
 const updatedUser = {
   username: 'updatedUserName',
   password: 'updatedPassword',
+  studentId: 777777,
 };
 
 const otherUser = {
@@ -248,32 +249,6 @@ describe('UserModule (e2e)', () => {
   });
 
   describe('editUser', () => {
-    it('Error: Same Username', () => {
-      return privateTest(`
-        mutation {
-          editUser(input: {
-            username: "${user.username}"
-            password: "${updatedUser.password}"
-          }) {
-            ok
-            error
-          }
-        }
-      `)
-        .expect(200)
-        .expect((res) => {
-          const {
-            body: {
-              data: {
-                editUser: { ok, error },
-              },
-            },
-          } = res;
-          expect(ok).toEqual(false);
-          expect(error).toEqual('Same Username');
-        });
-    });
-
     it('Create other user', () => {
       return publicTest(`
             mutation {
@@ -315,6 +290,33 @@ describe('UserModule (e2e)', () => {
         });
     });
 
+    it('Error: Already exist student id', () => {
+      return privateTest(`
+          mutation {
+            editUser(input: {
+              username: "${updatedUser.username}"
+              password: "${updatedUser.password}"
+              studentId: ${otherUser.studentId}
+            }) {
+              ok
+              error
+            }
+          }
+        `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                editUser: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(false);
+          expect(error).toEqual('Already exist student id');
+        });
+    });
+
     it('Error: Same Password', () => {
       return privateTest(`
           mutation {
@@ -345,12 +347,13 @@ describe('UserModule (e2e)', () => {
     it.todo('Error: Team not found');
 
     // Todo: Change Team
-    it('Update username, password', () => {
+    it('Update username, password, studentId', () => {
       return privateTest(`
           mutation {
             editUser(input: {
               username: "${updatedUser.username}"
               password: "${updatedUser.password}"
+              studentId: ${updatedUser.studentId}
             }) {
               ok
               error

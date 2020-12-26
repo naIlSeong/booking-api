@@ -57,4 +57,4 @@ Sports facility reservation service
 - [ ] Search team by team name
 - [ ] Search place by place name
 
-- [ ] Fix editUser StudentId
+- [x] Improve editUser StudentId
