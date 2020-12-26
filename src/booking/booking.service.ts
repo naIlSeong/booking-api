@@ -313,7 +313,7 @@ export class BookingService {
           inUse: false,
         },
         order: {
-          startAt: 'ASC',
+          startAt: 'DESC',
         },
       });
       return {

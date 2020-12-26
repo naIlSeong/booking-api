@@ -134,20 +134,14 @@ export class UserService {
   }
 
   async editUser(
-    { username, password, teamId }: EditUserInput,
+    { username, password, studentId, teamId }: EditUserInput,
     userId: number,
   ): Promise<EditUserOutput> {
     try {
       const user = await this.userRepo.findOne({ id: userId });
       if (username) {
-        if (username === user.username) {
-          return {
-            ok: false,
-            error: 'Same Username',
-          };
-        }
         const exist = await this.userRepo.findOne({ username });
-        if (exist) {
+        if (exist && exist.username !== user.username) {
           return {
             ok: false,
             error: 'Already username exist',
@@ -165,6 +159,17 @@ export class UserService {
           };
         }
         user.password = password;
+      }
+
+      if (studentId && studentId !== user.studentId) {
+        const exist = await this.userRepo.findOne({ studentId });
+        if (exist) {
+          return {
+            ok: false,
+            error: 'Already exist student id',
+          };
+        }
+        user.studentId = studentId;
       }
 
       if (teamId) {

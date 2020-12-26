@@ -54,3 +54,7 @@ Sports facility reservation service
     - Finished
 
 - [x] findAvailablePlace with location
+- [ ] Search team by team name
+- [ ] Search place by place name
+
+- [ ] Fix editUser StudentId

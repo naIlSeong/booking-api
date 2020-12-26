@@ -11,7 +11,7 @@ import { User } from '../entity/user.entity';
 
 @InputType()
 export class EditUserInput extends PartialType(
-  PickType(User, ['username', 'password']),
+  PickType(User, ['username', 'password', 'studentId']),
 ) {
   @Field((type) => Int, { nullable: true })
   teamId?: number;
