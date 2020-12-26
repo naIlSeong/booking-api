@@ -239,9 +239,11 @@ export class BookingService {
           error: 'Booking not found',
         };
       }
+      const creator = await this.userRepo.findOne({ id: booking.creatorId });
       return {
         ok: true,
         booking,
+        creator,
       };
     } catch (error) {
       return {
