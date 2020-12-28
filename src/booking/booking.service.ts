@@ -171,6 +171,9 @@ export class BookingService {
         if (booking.isFinished === false) {
           booking.isFinished = true;
         }
+        if (booking.canExtend === true) {
+          booking.canExtend = false;
+        }
         await this.bookingRepo.save(booking);
       });
     } catch (error) {

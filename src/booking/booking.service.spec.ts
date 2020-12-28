@@ -824,7 +824,23 @@ describe('BookingService', () => {
         { id: 1, inUse: false, isFinished: false },
       ]);
       bookingRepo.find.mockResolvedValueOnce([
-        { id: 2, inUse: true, isFinished: false },
+        {
+          id: 3,
+          inUse: true,
+          isFinished: false,
+          canExtend: false,
+          endAt: new Date(),
+        },
+        {
+          id: 2,
+          inUse: true,
+          isFinished: false,
+          canExtend: true,
+          endAt: new Date('2021-05-07T14:00:00'),
+        },
+      ]);
+      bookingRepo.find.mockResolvedValueOnce([
+        { id: 4, inUse: true, isFinished: false, canExtend: true },
       ]);
 
       await service.checkInUse();
