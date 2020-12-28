@@ -21,16 +21,16 @@ import {
 import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
 import { ExtendInUseInput, ExtendInUseOutput } from './dto/extend-in-use.dto';
 import { FinishInUseInput, FinishInUseOutput } from './dto/finish-in-use.dto';
-import {
-  GetComingUpBookingInput,
-  GetComingUpBookingOutput,
-} from './dto/get-coming-up-booking.dto';
-import {
-  GetInProgressBookingInput,
-  GetInProgressBookingOutput,
-} from './dto/get-in-progress-booking.dto';
-import { GetMyBookingsOutput } from './dto/get-my-bookings.dto';
+import { GetBookingInput, GetBookingOutput } from './dto/get-booking.dto';
 import { Booking } from './entity/booking.entity';
+
+interface IContitionalBooking {
+  creatorId?: number;
+  place?: Place;
+  isFinished: boolean;
+  inUse: boolean;
+  order: 'ASC' | 'DESC';
+}
 
 @Injectable()
 export class BookingService {
@@ -261,115 +261,111 @@ export class BookingService {
     }
   }
 
-  async getInProgressBooking(
-    creatorId: number,
-    { placeId }: GetInProgressBookingInput,
-  ): Promise<GetInProgressBookingOutput> {
-    try {
-      if (!placeId) {
-        const bookings = await this.bookingRepo.find({
-          relations: ['place', 'team'],
-          where: {
-            creatorId,
-            isFinished: false,
-            inUse: true,
-          },
-          order: {
-            startAt: 'ASC',
-          },
-        });
-        return {
-          ok: true,
-          bookings,
-        };
-      }
-      const place = await this.placeRepo.findOne({
-        id: placeId,
-      });
-      const bookings = await this.bookingRepo.find({
+  private async findConditionalBooking({
+    creatorId,
+    place,
+    isFinished,
+    inUse,
+    order,
+  }: IContitionalBooking) {
+    if (place) {
+      return this.bookingRepo.find({
         relations: ['place', 'team'],
         where: {
           place,
+          isFinished,
+          inUse,
+        },
+        order: {
+          startAt: order,
+        },
+      });
+    }
+    return this.bookingRepo.find({
+      relations: ['place', 'team'],
+      where: {
+        creatorId,
+        isFinished,
+        inUse,
+      },
+      order: {
+        startAt: order,
+      },
+    });
+  }
+
+  async getBooking(
+    creatorId: number,
+    { placeId, isInProgress, isComingUp, isFinished }: GetBookingInput,
+  ): Promise<GetBookingOutput> {
+    try {
+      let bookings: Booking[];
+      let place: Place;
+      if (placeId) {
+        place = await this.placeRepo.findOne({
+          id: placeId,
+        });
+      }
+
+      if (isInProgress === true) {
+        // My InProgress Booking
+        bookings = await this.findConditionalBooking({
+          creatorId,
           isFinished: false,
           inUse: true,
-        },
-        order: {
-          startAt: 'ASC',
-        },
-      });
-      return {
-        ok: true,
-        bookings,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        error: 'Unexpected Error',
-      };
-    }
-  }
-
-  async getComingUpBooking(
-    creatorId: number,
-    { placeId }: GetComingUpBookingInput,
-  ): Promise<GetComingUpBookingOutput> {
-    try {
-      if (!placeId) {
-        const bookings = await this.bookingRepo.find({
-          relations: ['place', 'team'],
-          where: {
-            creatorId,
-            isFinished: false,
-            inUse: false,
-          },
-          order: {
-            startAt: 'ASC',
-          },
+          order: 'ASC',
         });
+        // Place InProgress Booking
+        if (placeId) {
+          bookings = await this.findConditionalBooking({
+            place,
+            isFinished: false,
+            inUse: true,
+            order: 'ASC',
+          });
+        }
         return {
           ok: true,
           bookings,
         };
       }
-      const place = await this.placeRepo.findOne({
-        id: placeId,
-      });
-      const bookings = await this.bookingRepo.find({
-        relations: ['place', 'team'],
-        where: {
-          place,
+
+      if (isComingUp === true) {
+        // My ComingUp Booking
+        bookings = await this.findConditionalBooking({
+          creatorId,
           isFinished: false,
           inUse: false,
-        },
-        order: {
-          startAt: 'ASC',
-        },
-      });
-      return {
-        ok: true,
-        bookings,
-      };
-    } catch (error) {
-      return {
-        ok: false,
-        error: 'Unexpected Error',
-      };
-    }
-  }
+          order: 'ASC',
+        });
+        // Place ComingUp Booking
+        if (placeId) {
+          bookings = await this.findConditionalBooking({
+            place,
+            isFinished: false,
+            inUse: false,
+            order: 'ASC',
+          });
+        }
+        return {
+          ok: true,
+          bookings,
+        };
+      }
 
-  async getFinishedBooking(creatorId: number): Promise<GetMyBookingsOutput> {
-    try {
-      const bookings = await this.bookingRepo.find({
-        relations: ['place', 'team'],
-        where: {
+      if (isFinished === true) {
+        // My Finished Booking
+        bookings = await this.findConditionalBooking({
           creatorId,
           isFinished: true,
           inUse: false,
-        },
-        order: {
-          startAt: 'DESC',
-        },
-      });
+          order: 'DESC',
+        });
+        return {
+          ok: true,
+          bookings,
+        };
+      }
       return {
         ok: true,
         bookings,

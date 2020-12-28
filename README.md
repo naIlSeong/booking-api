@@ -48,7 +48,7 @@ Sports facility reservation service
   ***
 
 - [ ] Student ID validate !!
-- [ ] getMyBooking &rarr; Merge One Service
+- [x] getMyBooking &rarr; Merge One Service
 
   - In progress
   - Coming up next
