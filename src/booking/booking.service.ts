@@ -266,7 +266,7 @@ export class BookingService {
     isFinished,
     inUse,
     order,
-  }: IContitionalBooking) {
+  }: IContitionalBooking): Promise<Booking[]> {
     if (place) {
       return this.bookingRepo.find({
         relations: ['place', 'team'],
@@ -365,10 +365,6 @@ export class BookingService {
           bookings,
         };
       }
-      return {
-        ok: true,
-        bookings,
-      };
     } catch (error) {
       return {
         ok: false,

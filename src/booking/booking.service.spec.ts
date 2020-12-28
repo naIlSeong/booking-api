@@ -231,6 +231,98 @@ describe('BookingService', () => {
     });
   });
 
+  describe('getBooking & findConditionalBooking', () => {
+    const getBoookingArgs = {
+      placeId: 1,
+    };
+
+    it("Return place's in progress booking", async () => {
+      placeRepo.findOne.mockResolvedValue({ id: getBoookingArgs.placeId });
+      bookingRepo.find.mockResolvedValue([
+        { id: 2, place: { id: getBoookingArgs.placeId } },
+      ]);
+
+      const result = await service.getBooking(mockCreator.id, {
+        isInProgress: true,
+        placeId: getBoookingArgs.placeId,
+      });
+      expect(result).toEqual({
+        ok: true,
+        bookings: [{ id: 2, place: { id: getBoookingArgs.placeId } }],
+      });
+    });
+
+    it("Return user's in progress booking", async () => {
+      bookingRepo.find.mockResolvedValue([
+        { id: 2, creatorId: mockCreator.id },
+      ]);
+
+      const result = await service.getBooking(mockCreator.id, {
+        isInProgress: true,
+      });
+      expect(result).toEqual({
+        ok: true,
+        bookings: [{ id: 2, creatorId: mockCreator.id }],
+      });
+    });
+
+    it("Return place's coming up booking", async () => {
+      placeRepo.findOne.mockResolvedValue({ id: getBoookingArgs.placeId });
+      bookingRepo.find.mockResolvedValue([
+        { id: 2, place: { id: getBoookingArgs.placeId } },
+      ]);
+
+      const result = await service.getBooking(mockCreator.id, {
+        isComingUp: true,
+        placeId: getBoookingArgs.placeId,
+      });
+      expect(result).toEqual({
+        ok: true,
+        bookings: [{ id: 2, place: { id: getBoookingArgs.placeId } }],
+      });
+    });
+
+    it("Return user's coming up booking", async () => {
+      bookingRepo.find.mockResolvedValue([
+        { id: 2, creatorId: mockCreator.id },
+      ]);
+
+      const result = await service.getBooking(mockCreator.id, {
+        isComingUp: true,
+      });
+      expect(result).toEqual({
+        ok: true,
+        bookings: [{ id: 2, creatorId: mockCreator.id }],
+      });
+    });
+
+    it("Return user's finished booking", async () => {
+      bookingRepo.find.mockResolvedValue([
+        { id: 2, creatorId: mockCreator.id },
+      ]);
+
+      const result = await service.getBooking(mockCreator.id, {
+        isFinished: true,
+      });
+      expect(result).toEqual({
+        ok: true,
+        bookings: [{ id: 2, creatorId: mockCreator.id }],
+      });
+    });
+
+    it('Error: Unexpected Error', async () => {
+      bookingRepo.find.mockRejectedValue(new Error());
+
+      const result = await service.getBooking(mockCreator.id, {
+        isFinished: true,
+      });
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
+
   describe('deleteBooking', () => {
     const deleteBookingArgs = {
       bookingId: 1,
