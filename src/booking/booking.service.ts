@@ -21,6 +21,14 @@ import {
 import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
 import { ExtendInUseInput, ExtendInUseOutput } from './dto/extend-in-use.dto';
 import { FinishInUseInput, FinishInUseOutput } from './dto/finish-in-use.dto';
+import {
+  GetComingUpBookingInput,
+  GetComingUpBookingOutput,
+} from './dto/get-coming-up-booking.dto';
+import {
+  GetInProgressBookingInput,
+  GetInProgressBookingOutput,
+} from './dto/get-in-progress-booking.dto';
 import { GetMyBookingsOutput } from './dto/get-my-bookings.dto';
 import { Booking } from './entity/booking.entity';
 
@@ -253,14 +261,35 @@ export class BookingService {
     }
   }
 
-  // ToDo : Add getBookingsByPlaceId
-
-  async getInProgressBooking(creatorId: number): Promise<GetMyBookingsOutput> {
+  async getInProgressBooking(
+    creatorId: number,
+    { placeId }: GetInProgressBookingInput,
+  ): Promise<GetInProgressBookingOutput> {
     try {
+      if (!placeId) {
+        const bookings = await this.bookingRepo.find({
+          relations: ['place', 'team'],
+          where: {
+            creatorId,
+            isFinished: false,
+            inUse: true,
+          },
+          order: {
+            startAt: 'ASC',
+          },
+        });
+        return {
+          ok: true,
+          bookings,
+        };
+      }
+      const place = await this.placeRepo.findOne({
+        id: placeId,
+      });
       const bookings = await this.bookingRepo.find({
         relations: ['place', 'team'],
         where: {
-          creatorId,
+          place,
           isFinished: false,
           inUse: true,
         },
@@ -280,12 +309,35 @@ export class BookingService {
     }
   }
 
-  async getComingUpBooking(creatorId: number): Promise<GetMyBookingsOutput> {
+  async getComingUpBooking(
+    creatorId: number,
+    { placeId }: GetComingUpBookingInput,
+  ): Promise<GetComingUpBookingOutput> {
     try {
+      if (!placeId) {
+        const bookings = await this.bookingRepo.find({
+          relations: ['place', 'team'],
+          where: {
+            creatorId,
+            isFinished: false,
+            inUse: false,
+          },
+          order: {
+            startAt: 'ASC',
+          },
+        });
+        return {
+          ok: true,
+          bookings,
+        };
+      }
+      const place = await this.placeRepo.findOne({
+        id: placeId,
+      });
       const bookings = await this.bookingRepo.find({
         relations: ['place', 'team'],
         where: {
-          creatorId,
+          place,
           isFinished: false,
           inUse: false,
         },

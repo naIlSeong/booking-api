@@ -47,14 +47,19 @@ Sports facility reservation service
 
   ***
 
-  - [ ] Student ID validate !!
-  - [x] getMyBooking
-    - In progress
-    - Coming up next
-    - Finished
+- [ ] Student ID validate !!
+- [ ] getMyBooking &rarr; Merge One Service
+
+  - In progress
+  - Coming up next
+  - Finished
 
 - [x] findAvailablePlace with location
+
 - [ ] Search team by team name
 - [ ] Search place by place name
+- [ ] Search user by user name
 
 - [x] Improve editUser StudentId
+
+- [ ] Booking.creatorId => Booking.creator

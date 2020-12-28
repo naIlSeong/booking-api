@@ -21,6 +21,14 @@ import {
 import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
 import { ExtendInUseInput, ExtendInUseOutput } from './dto/extend-in-use.dto';
 import { FinishInUseInput, FinishInUseOutput } from './dto/finish-in-use.dto';
+import {
+  GetComingUpBookingInput,
+  GetComingUpBookingOutput,
+} from './dto/get-coming-up-booking.dto';
+import {
+  GetInProgressBookingInput,
+  GetInProgressBookingOutput,
+} from './dto/get-in-progress-booking.dto';
 import { GetMyBookingsOutput } from './dto/get-my-bookings.dto';
 import { Booking } from './entity/booking.entity';
 
@@ -49,14 +57,24 @@ export class BookingResolver {
   @Role(['Any'])
   getInProgressBooking(
     @AuthUser() creator: User,
-  ): Promise<GetMyBookingsOutput> {
-    return this.bookingService.getInProgressBooking(creator.id);
+    @Args('input') getInProgressBookingInput: GetInProgressBookingInput,
+  ): Promise<GetInProgressBookingOutput> {
+    return this.bookingService.getInProgressBooking(
+      creator.id,
+      getInProgressBookingInput,
+    );
   }
 
   @Query((returns) => GetMyBookingsOutput)
   @Role(['Any'])
-  getComingUpBooking(@AuthUser() creator: User): Promise<GetMyBookingsOutput> {
-    return this.bookingService.getComingUpBooking(creator.id);
+  getComingUpBooking(
+    @AuthUser() creator: User,
+    @Args('input') getComingUpBookingInput: GetComingUpBookingInput,
+  ): Promise<GetComingUpBookingOutput> {
+    return this.bookingService.getComingUpBooking(
+      creator.id,
+      getComingUpBookingInput,
+    );
   }
 
   @Query((returns) => GetMyBookingsOutput)

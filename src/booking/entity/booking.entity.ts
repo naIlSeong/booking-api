@@ -20,6 +20,7 @@ export class Booking extends CoreEntity {
   })
   team?: Team;
 
+  // ToDo : ManyToOne Relation
   @Field((type) => Int)
   @Column()
   creatorId: number;
