@@ -174,8 +174,7 @@ export class BookingService {
         await this.bookingRepo.save(booking);
       });
     } catch (error) {
-      console.log(error);
-      throw new InternalServerErrorException();
+      Promise.reject({ error: 'Fail to check' });
     }
   }
 

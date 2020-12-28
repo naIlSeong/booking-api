@@ -119,6 +119,28 @@ describe('BookingService', () => {
       });
     });
 
+    it('Error: Team not found', async () => {
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: createBookingArgs.placeId,
+        isAvailable: true,
+      });
+
+      bookingRepo.find.mockResolvedValue([]);
+      userRepo.findOne.mockResolvedValueOnce({
+        id: mockCreator.id,
+        role: UserRole.Individual,
+      });
+
+      const result = await service.createBooking(
+        createBookingArgs,
+        mockCreator.id,
+      );
+      expect(result).toEqual({
+        ok: false,
+        error: 'Team not found',
+      });
+    });
+
     it('Create new booking', async () => {
       placeRepo.findOne.mockResolvedValueOnce({
         id: createBookingArgs.placeId,
@@ -184,13 +206,18 @@ describe('BookingService', () => {
     });
 
     it('Find booking', async () => {
-      bookingRepo.findOne.mockResolvedValue({
+      bookingRepo.findOne.mockResolvedValueOnce({
         id: bookingDetailArgs.bookingId,
+        creatorId: mockCreator.id,
+      });
+      userRepo.findOne.mockResolvedValueOnce({
+        id: mockCreator.id,
       });
       const result = await service.bookingDetail(bookingDetailArgs);
       expect(result).toEqual({
         ok: true,
-        booking: { id: bookingDetailArgs.bookingId },
+        booking: { id: bookingDetailArgs.bookingId, creatorId: mockCreator.id },
+        creator: { id: mockCreator.id },
       });
     });
 
@@ -203,28 +230,6 @@ describe('BookingService', () => {
       });
     });
   });
-
-  // ToDo :
-  // describe('getMyBookings', () => {
-  //   it("Find creator's bookings", async () => {
-  //     bookingRepo.find.mockResolvedValue([
-  //       { id: 1, creatorId: mockCreator.id },
-  //       { id: 2, creatorId: mockCreator.id },
-  //     ]);
-  //     const result = await service.getMyBookings(mockCreator.id);
-  //     expect(result.ok).toEqual(true);
-  //     expect(result.bookings.length).toEqual(2);
-  //   });
-
-  //   it('Error: Unexpected Error', async () => {
-  //     bookingRepo.find.mockRejectedValue(new Error());
-  //     const result = await service.getMyBookings(mockCreator.id);
-  //     expect(result).toEqual({
-  //       ok: false,
-  //       error: 'Unexpected Error',
-  //     });
-  //   });
-  // });
 
   describe('deleteBooking', () => {
     const deleteBookingArgs = {
@@ -722,7 +727,7 @@ describe('BookingService', () => {
   });
 
   describe('checkInUse', () => {
-    it('chechInUse', async () => {
+    it('checkInUse', async () => {
       bookingRepo.find.mockResolvedValueOnce([
         { id: 1, inUse: false, isFinished: false },
       ]);
@@ -732,6 +737,17 @@ describe('BookingService', () => {
 
       await service.checkInUse();
       expect(bookingRepo.save).toBeCalled();
+    });
+
+    it('Catch Error', async () => {
+      bookingRepo.find.mockRejectedValue(new Error());
+      try {
+        await service.checkInUse();
+      } catch (e) {
+        expect(e).toEqual({
+          error: 'Fail to check',
+        });
+      }
     });
   });
 
