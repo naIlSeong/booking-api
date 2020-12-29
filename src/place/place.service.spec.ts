@@ -88,6 +88,7 @@ describe('PlaceService', () => {
       });
       expect(placeRepo.create).toBeCalledWith({
         placeName: createPlaceArgs.placeName,
+        placeNameSlug: 'mockplacename',
         placeLocation: { id: createPlaceArgs.locationId },
       });
     });
@@ -185,9 +186,13 @@ describe('PlaceService', () => {
       locationRepo.findOne.mockResolvedValueOnce({
         id: editPlaceArgs.locationId,
       });
+      // my place
       placeRepo.findOne.mockResolvedValueOnce({
         id: editPlaceArgs.placeId,
       });
+      // exist place slug
+      placeRepo.findOne.mockResolvedValueOnce(null);
+      // exist place name
       placeRepo.findOne.mockResolvedValueOnce({
         id: editPlaceArgs.placeId,
       });
@@ -206,6 +211,7 @@ describe('PlaceService', () => {
       placeRepo.findOne.mockResolvedValueOnce({
         id: editPlaceArgs.placeId,
       });
+      placeRepo.findOne.mockResolvedValueOnce(null);
       placeRepo.findOne.mockResolvedValueOnce({
         id: existPlaceArgs.id,
       });
@@ -508,6 +514,42 @@ describe('PlaceService', () => {
       placeRepo.find.mockRejectedValue(new Error());
 
       const result = await service.getAvailablePlace(getAvailablePlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
+
+  describe('searchPlace', () => {
+    const searchPlaceArgs = {
+      query: 'TIGER',
+    };
+
+    it('Error: Place not found', async () => {
+      placeRepo.find.mockResolvedValue(null);
+
+      const result = await service.searchPlace(searchPlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Place not found',
+      });
+    });
+
+    it('Search team', async () => {
+      placeRepo.find.mockResolvedValue([{ placeNameSlug: 'kia-tigers' }]);
+
+      const result = await service.searchPlace(searchPlaceArgs);
+      expect(result).toEqual({
+        ok: true,
+        places: [{ placeNameSlug: 'kia-tigers' }],
+      });
+    });
+
+    it('Error: Unexpected Error', async () => {
+      placeRepo.find.mockRejectedValue(new Error());
+
+      const result = await service.searchPlace(searchPlaceArgs);
       expect(result).toEqual({
         ok: false,
         error: 'Unexpected Error',
