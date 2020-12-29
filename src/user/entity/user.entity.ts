@@ -55,6 +55,11 @@ export class User extends CoreEntity {
   @Field((type) => String)
   @Column()
   @IsString()
+  usernameSlug: string;
+
+  @Field((type) => String)
+  @Column()
+  @IsString()
   @Length(8)
   password: string;
 

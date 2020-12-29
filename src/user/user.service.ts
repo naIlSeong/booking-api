@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import { CreateUserInput, CreateUserOutput } from './dto/create-user.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
 import { User, UserRole } from './entity/user.entity';
@@ -9,6 +9,7 @@ import { DeleteUserOutput } from './dto/delete-user.dto';
 import { EditUserInput, EditUserOutput } from './dto/edit-user.dto';
 import { GetUserInput, GetUserOutput } from './dto/get-user.dto';
 import { Team } from 'src/team/entity/team.entity';
+import { SearchUserInput, SearchUserOutput } from './dto/search-user.dto';
 
 @Injectable()
 export class UserService {
@@ -18,14 +19,20 @@ export class UserService {
     private readonly jwtService: JwtService,
   ) {}
 
+  private generateSlug(username: string): string {
+    return username.trim().toLowerCase().replace(/ /g, '-');
+  }
+
   async createUser({
     studentId,
     username,
     password,
   }: CreateUserInput): Promise<CreateUserOutput> {
     try {
+      const usernameSlug = this.generateSlug(username);
       const existUsername = await this.userRepo.findOne({ username });
-      if (existUsername) {
+      const existUsernameSlug = await this.userRepo.findOne({ usernameSlug });
+      if (existUsername || existUsernameSlug) {
         return {
           ok: false,
           error: 'Already exist username',
@@ -41,7 +48,7 @@ export class UserService {
         }
       }
       await this.userRepo.save(
-        this.userRepo.create({ username, password, studentId }),
+        this.userRepo.create({ username, usernameSlug, password, studentId }),
       );
       return {
         ok: true,
@@ -140,14 +147,20 @@ export class UserService {
     try {
       const user = await this.userRepo.findOne({ id: userId });
       if (username) {
+        const usernameSlug = this.generateSlug(username);
         const exist = await this.userRepo.findOne({ username });
-        if (exist && exist.username !== user.username) {
+        const existSlug = await this.userRepo.findOne({ usernameSlug });
+        if (
+          (exist && exist.username !== user.username) ||
+          (existSlug && existSlug.usernameSlug !== user.usernameSlug)
+        ) {
           return {
             ok: false,
             error: 'Already username exist',
           };
         }
         user.username = username;
+        user.usernameSlug = usernameSlug;
       }
 
       if (password) {
@@ -213,6 +226,34 @@ export class UserService {
       return {
         ok: true,
         user,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async searchUser({ query }: SearchUserInput): Promise<SearchUserOutput> {
+    try {
+      const querySlug = query.trim().toLowerCase().replace(/ /g, '-');
+      const users = await this.userRepo.find({
+        where: {
+          usernameSlug: Raw(
+            (usernameSlug) => `${usernameSlug} ILIKE '%${querySlug}%'`,
+          ),
+        },
+      });
+      if (!users) {
+        return {
+          ok: false,
+          error: 'User not found',
+        };
+      }
+      return {
+        ok: true,
+        users,
       };
     } catch (error) {
       return {

@@ -6,6 +6,7 @@ import { DeleteUserOutput } from './dto/delete-user.dto';
 import { EditUserInput, EditUserOutput } from './dto/edit-user.dto';
 import { GetUserInput, GetUserOutput } from './dto/get-user.dto';
 import { LoginInput, LoginOutput } from './dto/login.dto';
+import { SearchUserInput, SearchUserOutput } from './dto/search-user.dto';
 import { User } from './entity/user.entity';
 import { UserService } from './user.service';
 
@@ -57,5 +58,13 @@ export class UserResolver {
   @Role(['Any'])
   getUser(@Args('input') getUserInput: GetUserInput): Promise<GetUserOutput> {
     return this.userService.getUser(getUserInput);
+  }
+
+  @Query((returns) => SearchUserOutput)
+  @Role(['Any'])
+  searchUser(
+    @Args('input') searchUserInput: SearchUserInput,
+  ): Promise<SearchUserOutput> {
+    return this.userService.searchUser(searchUserInput);
   }
 }
