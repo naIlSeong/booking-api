@@ -25,7 +25,7 @@ import { GetBookingInput, GetBookingOutput } from './dto/get-booking.dto';
 import { Booking } from './entity/booking.entity';
 
 interface IContitionalBooking {
-  creatorId?: number;
+  creator?: User;
   place?: Place;
   isFinished: boolean;
   inUse: boolean;
@@ -186,6 +186,7 @@ export class BookingService {
     creatorId: number,
   ): Promise<CreateBookingOutput> {
     try {
+      const creator = await this.userRepo.findOne({ id: creatorId });
       const { error, place } = await this.isAvailablePlace(placeId);
       if (error) {
         return {
@@ -206,14 +207,13 @@ export class BookingService {
         };
       }
       const booking = this.bookingRepo.create({
-        creatorId,
+        creator,
         place,
         startAt,
         endAt,
       });
 
       // ToDo : Add Error if !teamId
-      const creator = await this.userRepo.findOne({ id: creatorId });
       if (withTeam && withTeam === true) {
         if (!creator.teamId || creator.role === UserRole.Individual) {
           return {
@@ -241,7 +241,7 @@ export class BookingService {
   }: BookingDetailInput): Promise<BookingDetailOutput> {
     try {
       const booking = await this.bookingRepo.findOne(bookingId, {
-        relations: ['place', 'team'],
+        relations: ['place', 'team', 'creator'],
       });
       if (!booking) {
         return {
@@ -249,11 +249,9 @@ export class BookingService {
           error: 'Booking not found',
         };
       }
-      const creator = await this.userRepo.findOne({ id: booking.creatorId });
       return {
         ok: true,
         booking,
-        creator,
       };
     } catch (error) {
       return {
@@ -264,7 +262,7 @@ export class BookingService {
   }
 
   private async findConditionalBooking({
-    creatorId,
+    creator,
     place,
     isFinished,
     inUse,
@@ -286,7 +284,7 @@ export class BookingService {
     return this.bookingRepo.find({
       relations: ['place', 'team'],
       where: {
-        creatorId,
+        creator,
         isFinished,
         inUse,
       },
@@ -303,6 +301,8 @@ export class BookingService {
     try {
       let bookings: Booking[];
       let place: Place;
+      const creator = await this.userRepo.findOne({ id: creatorId });
+
       if (placeId) {
         place = await this.placeRepo.findOne({
           id: placeId,
@@ -312,7 +312,7 @@ export class BookingService {
       if (isInProgress === true) {
         // My InProgress Booking
         bookings = await this.findConditionalBooking({
-          creatorId,
+          creator,
           isFinished: false,
           inUse: true,
           order: 'ASC',
@@ -335,7 +335,7 @@ export class BookingService {
       if (isComingUp === true) {
         // My ComingUp Booking
         bookings = await this.findConditionalBooking({
-          creatorId,
+          creator,
           isFinished: false,
           inUse: false,
           order: 'ASC',
@@ -358,7 +358,7 @@ export class BookingService {
       if (isFinished === true) {
         // My Finished Booking
         bookings = await this.findConditionalBooking({
-          creatorId,
+          creator,
           isFinished: true,
           inUse: false,
           order: 'DESC',
@@ -474,6 +474,7 @@ export class BookingService {
     creatorId: number,
   ): Promise<CreateInUseOutput> {
     try {
+      const creator = await this.userRepo.findOne({ id: creatorId });
       const { error, place } = await this.isAvailablePlace(placeId);
       if (error) {
         return {
@@ -501,12 +502,11 @@ export class BookingService {
         startAt,
         endAt,
         place,
-        creatorId,
+        creator,
         inUse: true,
       });
 
       if (withTeam && withTeam === true) {
-        const creator = await this.userRepo.findOne({ id: creatorId });
         if (!creator.teamId) {
           return {
             ok: false,

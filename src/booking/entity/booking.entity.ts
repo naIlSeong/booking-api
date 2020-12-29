@@ -1,8 +1,16 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
 import { CoreEntity } from 'src/common/entity/common.entity';
 import { Team } from 'src/team/entity/team.entity';
-import { BeforeInsert, BeforeUpdate, Column, Entity, ManyToOne } from 'typeorm';
+import { User } from 'src/user/entity/user.entity';
+import {
+  BeforeInsert,
+  BeforeUpdate,
+  Column,
+  Entity,
+  ManyToOne,
+  RelationId,
+} from 'typeorm';
 import { Place } from '../../place/entity/place.entity';
 
 @InputType('BookingInputType', { isAbstract: true })
@@ -20,9 +28,13 @@ export class Booking extends CoreEntity {
   })
   team?: Team;
 
-  // ToDo : ManyToOne Relation
-  @Field((type) => Int)
-  @Column()
+  @Field((type) => User)
+  @ManyToOne((type) => User, (user) => user.CreatedBooking, {
+    onDelete: 'CASCADE',
+  })
+  creator: User;
+
+  @RelationId((booking: Booking) => booking.creator)
   creatorId: number;
 
   @Field((type) => Date)

@@ -62,5 +62,5 @@ Sports facility reservation service
 
 - [x] Improve editUser StudentId
 
-- [ ] Booking.creatorId => Booking.creator
+- [x] Booking.creatorId => Booking.creator
 - [ ] Edit Location

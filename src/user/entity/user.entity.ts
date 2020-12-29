@@ -15,6 +15,7 @@ import {
   JoinTable,
   ManyToMany,
   ManyToOne,
+  OneToMany,
   RelationId,
 } from 'typeorm';
 import * as bcrypt from 'bcrypt';
@@ -75,6 +76,12 @@ export class User extends CoreEntity {
   })
   @JoinTable()
   bookings?: Booking[];
+
+  @Field((type) => [Booking], { nullable: true })
+  @OneToMany((type) => Booking, (booking) => booking.creator, {
+    nullable: true,
+  })
+  CreatedBooking?: Booking[];
 
   @Field((type) => Team, { nullable: true })
   @ManyToOne((type) => Team, (team) => team.members, {
