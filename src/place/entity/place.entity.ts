@@ -12,6 +12,10 @@ export class Place extends CoreEntity {
   @Column()
   placeName: string;
 
+  @Field((type) => String)
+  @Column()
+  placeNameSlug: string;
+
   @Field((type) => PlaceLocation)
   @ManyToOne((type) => PlaceLocation, (placeLocation) => placeLocation.places, {
     eager: true,

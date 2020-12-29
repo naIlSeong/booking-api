@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import {
   CreateLocationInput,
   CreateLocationOutput,
@@ -18,6 +18,7 @@ import {
   LocationDetailOutput,
 } from './dto/location-detail.dto';
 import { PlaceDetailInput, PlaceDetailOutput } from './dto/place-detail.dto';
+import { SearchPlaceInput, SearchPlaceOutput } from './dto/search-place.dto';
 import {
   ToggleIsAvialableInput,
   ToggleIsAvialableOutput,
@@ -32,6 +33,10 @@ export class PlaceService {
     @InjectRepository(PlaceLocation)
     private readonly locationRepo: Repository<PlaceLocation>,
   ) {}
+
+  private generateSlug(placeName: string): string {
+    return placeName.trim().toLowerCase().replace(/ /g, '-');
+  }
 
   private async findPlaceAndLocation(
     locationId: number,
@@ -69,18 +74,23 @@ export class PlaceService {
           error: 'Location not found',
         };
       }
+      const placeNameSlug = this.generateSlug(placeName);
       const exist = await this.placeRepo.findOne({
         placeName,
         placeLocation,
       });
-      if (exist) {
+      const existSlug = await this.placeRepo.findOne({
+        placeNameSlug,
+        placeLocation,
+      });
+      if (exist || existSlug) {
         return {
           ok: false,
           error: 'Already place exist',
         };
       }
       await this.placeRepo.save(
-        this.placeRepo.create({ placeName, placeLocation }),
+        this.placeRepo.create({ placeName, placeNameSlug, placeLocation }),
       );
       return {
         ok: true,
@@ -135,11 +145,16 @@ export class PlaceService {
           error,
         };
       }
+      const placeNameSlug = this.generateSlug(placeName);
+      const existPlaceNameSlug = await this.placeRepo.findOne({
+        placeNameSlug,
+        placeLocation,
+      });
       const existPlaceName = await this.placeRepo.findOne({
         placeName,
         placeLocation,
       });
-      if (existPlaceName) {
+      if (existPlaceName || existPlaceNameSlug) {
         if (existPlaceName.id === place.id) {
           return {
             ok: false,
@@ -151,7 +166,9 @@ export class PlaceService {
           error: 'Already exist place name',
         };
       }
-      await this.placeRepo.save([{ ...place, inUse, placeName }]);
+      await this.placeRepo.save([
+        { ...place, inUse, placeName, placeNameSlug },
+      ]);
       return {
         ok: true,
       };
@@ -227,14 +244,18 @@ export class PlaceService {
     locationName,
   }: CreateLocationInput): Promise<CreateLocationOutput> {
     try {
+      const locationNameSlug = this.generateSlug(locationName);
+      const existSlug = await this.locationRepo.findOne({ locationNameSlug });
       const exist = await this.locationRepo.findOne({ locationName });
-      if (exist) {
+      if (exist || existSlug) {
         return {
           ok: false,
           error: 'Already location exist',
         };
       }
-      await this.locationRepo.save(this.locationRepo.create({ locationName }));
+      await this.locationRepo.save(
+        this.locationRepo.create({ locationName, locationNameSlug }),
+      );
       return {
         ok: true,
       };
@@ -313,6 +334,34 @@ export class PlaceService {
         return {
           ok: false,
           error: 'Available place not found',
+        };
+      }
+      return {
+        ok: true,
+        places,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async searchPlace({ query }: SearchPlaceInput): Promise<SearchPlaceOutput> {
+    try {
+      const querySlug = this.generateSlug(query);
+      const places = await this.placeRepo.find({
+        where: {
+          placeNameSlug: Raw(
+            (placeNameSlug) => `${placeNameSlug} ILIKE '%${querySlug}%'`,
+          ),
+        },
+      });
+      if (!places) {
+        return {
+          ok: false,
+          error: 'Place not found',
         };
       }
       return {

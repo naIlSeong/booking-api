@@ -57,9 +57,10 @@ Sports facility reservation service
 - [x] findAvailablePlace with location
 
 - [ ] Search team by team name
-- [ ] Search place by place name
+- [x] Search place by place name
 - [x] Search user by user name
 
 - [x] Improve editUser StudentId
 
 - [ ] Booking.creatorId => Booking.creator
+- [ ] Edit Location

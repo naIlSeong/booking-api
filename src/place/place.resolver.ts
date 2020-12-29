@@ -17,6 +17,7 @@ import {
   LocationDetailOutput,
 } from './dto/location-detail.dto';
 import { PlaceDetailInput, PlaceDetailOutput } from './dto/place-detail.dto';
+import { SearchPlaceInput, SearchPlaceOutput } from './dto/search-place.dto';
 import {
   ToggleIsAvialableInput,
   ToggleIsAvialableOutput,
@@ -75,6 +76,14 @@ export class PlaceResolver {
     @Args('input') getAvailablePlaceInput: GetAvailablePlaceInput,
   ): Promise<GetAvailablePlaceOutput> {
     return this.placeService.getAvailablePlace(getAvailablePlaceInput);
+  }
+
+  @Query((returns) => SearchPlaceOutput)
+  @Role(['Any'])
+  searchPlace(
+    @Args('input') searchPlaceInput: SearchPlaceInput,
+  ): Promise<SearchPlaceOutput> {
+    return this.placeService.searchPlace(searchPlaceInput);
   }
 }
 

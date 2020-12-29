@@ -18,6 +18,10 @@ export class PlaceLocation extends CoreEntity {
   @Column()
   locationName: string;
 
+  @Field((type) => String)
+  @Column()
+  locationNameSlug: string;
+
   @Field((type) => Boolean)
   @Column({ default: true })
   isAvailable: boolean;

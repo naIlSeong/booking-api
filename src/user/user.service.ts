@@ -237,7 +237,7 @@ export class UserService {
 
   async searchUser({ query }: SearchUserInput): Promise<SearchUserOutput> {
     try {
-      const querySlug = query.trim().toLowerCase().replace(/ /g, '-');
+      const querySlug = this.generateSlug(query);
       const users = await this.userRepo.find({
         where: {
           usernameSlug: Raw(
