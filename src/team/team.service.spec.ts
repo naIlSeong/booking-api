@@ -187,10 +187,16 @@ describe('TeamService', () => {
         id: userId,
         teamId: editTeamArgs.teamId,
       });
+      // user's team
       teamRepo.findOne.mockResolvedValueOnce({
         id: editTeamArgs.teamId,
         teamName: 'oldTeamName',
       });
+      teamRepo.findOne.mockResolvedValueOnce({
+        id: 2,
+        teamNameSlug: 'mockteamname',
+      });
+      // exist team
       teamRepo.findOne.mockResolvedValueOnce({
         id: 2,
         teamName: editTeamArgs.teamName,
@@ -212,10 +218,17 @@ describe('TeamService', () => {
         id: userId,
         teamId: editTeamArgs.teamId,
       });
+      // user's team
       teamRepo.findOne.mockResolvedValueOnce({
         id: editTeamArgs.teamId,
         teamName: SAME_TEAM_NAME,
       });
+      // exist team slug
+      teamRepo.findOne.mockResolvedValueOnce({
+        id: editTeamArgs.teamId,
+        teamNameSlug: 'sameteamname',
+      });
+      // exist team
       teamRepo.findOne.mockResolvedValueOnce({
         id: editTeamArgs.teamId,
         teamName: SAME_TEAM_NAME,
@@ -240,9 +253,11 @@ describe('TeamService', () => {
         id: editTeamArgs.teamId,
       });
       teamRepo.findOne.mockResolvedValueOnce(null);
+      teamRepo.findOne.mockResolvedValueOnce(null);
       teamRepo.save.mockReturnValue({
         id: editTeamArgs.teamId,
         teamName: editTeamArgs.teamName,
+        teamNameSlug: 'mockteamname',
       });
 
       const result = await service.editTeam(
@@ -365,6 +380,42 @@ describe('TeamService', () => {
       userRepo.findOne.mockRejectedValue(new Error());
 
       const result = await service.deleteTeam(userId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
+
+  describe('searchTeam', () => {
+    const searchTeamArgs = {
+      query: 'TIGER',
+    };
+
+    it('Error: Team not found', async () => {
+      teamRepo.find.mockResolvedValue(null);
+
+      const result = await service.searchTeam(searchTeamArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Team not found',
+      });
+    });
+
+    it('Search team', async () => {
+      teamRepo.find.mockResolvedValue([{ teamNameSlug: 'kia-tigers' }]);
+
+      const result = await service.searchTeam(searchTeamArgs);
+      expect(result).toEqual({
+        ok: true,
+        teams: [{ teamNameSlug: 'kia-tigers' }],
+      });
+    });
+
+    it('Error: Unexpected Error', async () => {
+      teamRepo.find.mockRejectedValue(new Error());
+
+      const result = await service.searchTeam(searchTeamArgs);
       expect(result).toEqual({
         ok: false,
         error: 'Unexpected Error',
