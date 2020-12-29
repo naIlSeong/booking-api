@@ -492,7 +492,9 @@ describe('BookingModule (e2e)', () => {
               ok
               error
               booking {
-                creatorId
+                creator {
+                  id
+                }
                 place {
                   placeName
                 }
@@ -524,7 +526,9 @@ describe('BookingModule (e2e)', () => {
               ok
               error
               booking {
-                creatorId
+                creator {
+                  id
+                }
                 place {
                   placeName
                 }
@@ -541,7 +545,7 @@ describe('BookingModule (e2e)', () => {
                   ok,
                   error,
                   booking: {
-                    creatorId,
+                    creator: { id },
                     place: { placeName },
                   },
                 },
@@ -550,7 +554,7 @@ describe('BookingModule (e2e)', () => {
           } = res;
           expect(ok).toEqual(true);
           expect(error).toEqual(null);
-          expect(creatorId).toEqual(1);
+          expect(id).toEqual(1);
           expect(placeName).toEqual(PLACE);
         });
     });

@@ -83,6 +83,7 @@ export class UserService {
       await this.userRepo.save(
         this.userRepo.create({
           username,
+          usernameSlug: this.generateSlug(username),
           password,
           role: UserRole.Admin,
         }),

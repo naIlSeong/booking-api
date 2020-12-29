@@ -11,6 +11,7 @@ const TOKEN = 'MOCK_TOKEN';
 
 const mockRepository = () => ({
   findOne: jest.fn(),
+  find: jest.fn(),
   create: jest.fn(),
   save: jest.fn(),
   delete: jest.fn(),
@@ -65,13 +66,17 @@ describe('UserService', () => {
     };
 
     it('shoudl fail on exist username', async () => {
-      userRepo.findOne.mockResolvedValue({
+      userRepo.findOne.mockResolvedValueOnce({
         id: 1,
         username: createUserArgs.username,
       });
+      userRepo.findOne.mockResolvedValueOnce({
+        id: 1,
+        usernameSlug: 'mockusername',
+      });
 
       const result = await service.createUser(createUserArgs);
-      expect(userRepo.findOne).toHaveBeenCalledTimes(1);
+      expect(userRepo.findOne).toHaveBeenCalled();
       expect(result).toEqual({
         ok: false,
         error: 'Already exist username',
@@ -79,6 +84,7 @@ describe('UserService', () => {
     });
 
     it('shoudl fail on exist studentId', async () => {
+      userRepo.findOne.mockResolvedValueOnce(null);
       userRepo.findOne.mockResolvedValueOnce(null);
       userRepo.create.mockReturnValue({
         username: createUserArgs.username,
@@ -457,6 +463,39 @@ describe('UserService', () => {
       userRepo.findOne.mockRejectedValue(new Error());
 
       const result = await service.getUser(getUserArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
+
+  describe('searchUser', () => {
+    const searchUserArgs = {
+      query: 'user',
+    };
+
+    it('Error: User not found', async () => {
+      userRepo.find.mockResolvedValue(null);
+      const result = await service.searchUser(searchUserArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'User not found',
+      });
+    });
+
+    it('Search user', async () => {
+      userRepo.find.mockResolvedValue([{ usernameSlug: 'test-user' }]);
+      const result = await service.searchUser(searchUserArgs);
+      expect(result).toEqual({
+        ok: true,
+        users: [{ usernameSlug: 'test-user' }],
+      });
+    });
+
+    it('Error: Unexpected Error', async () => {
+      userRepo.find.mockRejectedValue(new Error());
+      const result = await service.searchUser(searchUserArgs);
       expect(result).toEqual({
         ok: false,
         error: 'Unexpected Error',
