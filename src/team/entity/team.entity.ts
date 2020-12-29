@@ -12,6 +12,10 @@ export class Team extends CoreEntity {
   @Column()
   teamName: string;
 
+  @Field((type) => String)
+  @Column()
+  teamNameSlug: string;
+
   @Field((type) => [User])
   @OneToMany((type) => User, (user) => user.team)
   members: User[];

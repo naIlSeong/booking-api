@@ -10,6 +10,7 @@ import {
   RegisterMemberInput,
   RegisterMemberOutput,
 } from './dto/register-member.dto';
+import { SearchTeamInput, SearchTeamOutput } from './dto/search-team.dto';
 import { TeamDetailInput, TeamDetailOutput } from './dto/team-detail.dto';
 import { Team } from './entity/team.entity';
 import { TeamService } from './team.service';
@@ -66,5 +67,13 @@ export class TeamResolver {
   @Role(['Representative'])
   deleteTeam(@AuthUser() user: User): Promise<DeleteTeamOutput> {
     return this.teamService.deleteTeam(user.id);
+  }
+
+  @Query((returns) => SearchTeamOutput)
+  @Role(['Any'])
+  searchTeam(
+    @Args('input') searchTeamInput: SearchTeamInput,
+  ): Promise<SearchTeamOutput> {
+    return this.teamService.searchTeam(searchTeamInput);
   }
 }

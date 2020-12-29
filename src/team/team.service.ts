@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User, UserRole } from 'src/user/entity/user.entity';
-import { Repository } from 'typeorm';
+import { Raw, Repository } from 'typeorm';
 import { CreateTeamInput, CreateTeamOutput } from './dto/create-team.dto';
 import { DeleteTeamOutput } from './dto/delete-team.dto';
 import { EditTeamInput, EditTeamOutput } from './dto/edit-team.dto';
@@ -10,6 +10,7 @@ import {
   RegisterMemberInput,
   RegisterMemberOutput,
 } from './dto/register-member.dto';
+import { SearchTeamInput, SearchTeamOutput } from './dto/search-team.dto';
 import { TeamDetailInput, TeamDetailOutput } from './dto/team-detail.dto';
 import { Team } from './entity/team.entity';
 
@@ -20,14 +21,20 @@ export class TeamService {
     @InjectRepository(User) private readonly userRepo: Repository<User>,
   ) {}
 
+  private generateSlug(teamName: string): string {
+    return teamName.trim().toLowerCase().replace(/ /g, '-');
+  }
+
   async createTeam(
     { teamName }: CreateTeamInput,
     individualId: number,
   ): Promise<CreateTeamOutput> {
     try {
       const representative = await this.userRepo.findOne({ id: individualId });
+      const teamNameSlug = this.generateSlug(teamName);
+      const existSlug = await this.teamRepo.findOne({ teamNameSlug });
       const exist = await this.teamRepo.findOne({ teamName });
-      if (exist) {
+      if (exist || existSlug) {
         return {
           ok: false,
           error: 'Already team name exist',
@@ -35,6 +42,7 @@ export class TeamService {
       }
       const team = this.teamRepo.create({
         teamName,
+        teamNameSlug,
         members: [representative],
       });
       await this.userRepo.save({
@@ -100,20 +108,22 @@ export class TeamService {
         id: representativeId,
       });
       const team = await this.teamRepo.findOne({ id: representative.teamId });
+      const teamNameSlug = this.generateSlug(teamName);
+      const existSlug = await this.teamRepo.findOne({ teamNameSlug });
       const exist = await this.teamRepo.findOne({ teamName });
-      if (exist) {
-        if (exist.id !== team.id) {
+      if (exist || existSlug) {
+        if (exist.id === team.id) {
           return {
             ok: false,
-            error: 'Already team exist',
+            error: 'Same team name',
           };
         }
         return {
           ok: false,
-          error: 'Same team name',
+          error: 'Already team exist',
         };
       }
-      await this.teamRepo.save({ ...team, teamName });
+      await this.teamRepo.save({ ...team, teamName, teamNameSlug });
       return {
         ok: true,
       };
@@ -184,6 +194,35 @@ export class TeamService {
       await this.teamRepo.delete({ id: team.id });
       return {
         ok: true,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async searchTeam({ query }: SearchTeamInput): Promise<SearchTeamOutput> {
+    try {
+      const querySlug = this.generateSlug(query);
+      const teams = await this.teamRepo.find({
+        where: {
+          teamNameSlug: Raw(
+            (teamNameSlug) => `${teamNameSlug} ILIKE '%${querySlug}%'`,
+          ),
+        },
+        relations: ['members'],
+      });
+      if (!teams) {
+        return {
+          ok: false,
+          error: 'Team not found',
+        };
+      }
+      return {
+        ok: true,
+        teams,
       };
     } catch (error) {
       return {

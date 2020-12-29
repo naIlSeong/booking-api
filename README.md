@@ -56,7 +56,7 @@ Sports facility reservation service
 
 - [x] findAvailablePlace with location
 
-- [ ] Search team by team name
+- [x] Search team by team name
 - [x] Search place by place name
 - [x] Search user by user name
 
