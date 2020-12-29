@@ -134,13 +134,14 @@ export class BookingService {
     try {
       const now = new Date();
       const nowInUse = await this.bookingRepo.find({
-        startAt: LessThan(now),
-        endAt: MoreThan(now),
+        where: { startAt: LessThan(now), endAt: MoreThan(now) },
+        relations: ['place'],
       });
       nowInUse.forEach(async (booking) => {
         if (booking.inUse === false) {
           if (booking.isFinished === false) {
             booking.inUse = true;
+            await this.placeRepo.save({ ...booking.place, inUse: true });
             await this.bookingRepo.save(booking);
           }
         }
@@ -161,8 +162,8 @@ export class BookingService {
       });
 
       const finishedInUse = await this.bookingRepo.find({
-        endAt: LessThan(now),
-        isFinished: false,
+        where: { endAt: LessThan(now), isFinished: false },
+        relations: ['place'],
       });
       finishedInUse.forEach(async (booking) => {
         if (booking.inUse === true) {
@@ -174,6 +175,7 @@ export class BookingService {
         if (booking.canExtend === true) {
           booking.canExtend = false;
         }
+        await this.placeRepo.save({ ...booking.place, inUse: false });
         await this.bookingRepo.save(booking);
       });
     } catch (error) {
@@ -515,6 +517,7 @@ export class BookingService {
         }
         booking.team = await this.teamRepo.findOne({ id: creator.teamId });
       }
+      await this.placeRepo.save({ ...place, inUse: true });
       await this.bookingRepo.save(booking);
       return {
         ok: true,
@@ -572,7 +575,10 @@ export class BookingService {
     creatorId: number,
   ): Promise<FinishInUseOutput> {
     try {
-      const booking = await this.bookingRepo.findOne({ id: bookingId });
+      const booking = await this.bookingRepo.findOne({
+        where: { id: bookingId },
+        relations: ['place'],
+      });
       const error = this.isCreatorsBooking(booking, creatorId, true);
       if (error) {
         return {
@@ -580,6 +586,7 @@ export class BookingService {
           error,
         };
       }
+      await this.placeRepo.save({ ...booking.place, inUse: false });
       await this.bookingRepo.save({
         ...booking,
         inUse: false,
@@ -590,6 +597,7 @@ export class BookingService {
         ok: true,
       };
     } catch (error) {
+      console.log(error);
       return {
         ok: false,
         error: 'Unexpected Error',
