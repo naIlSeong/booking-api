@@ -68,10 +68,6 @@ export class TeamService {
   ): Promise<RegisterMemberOutput> {
     try {
       const individual = await this.userRepo.findOne({ id: representativeId });
-      const team = await this.teamRepo.findOne({
-        where: { id: teamId },
-        relations: ['members'],
-      });
       if (!individual) {
         return {
           ok: false,
@@ -82,6 +78,16 @@ export class TeamService {
         return {
           ok: false,
           error: 'Already has team',
+        };
+      }
+      const team = await this.teamRepo.findOne({
+        where: { id: teamId },
+        relations: ['members'],
+      });
+      if (!team) {
+        return {
+          ok: false,
+          error: 'Team not found',
         };
       }
       team.members.push(individual);

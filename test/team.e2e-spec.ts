@@ -31,6 +31,7 @@ describe('TeamModule (e2e)', () => {
   let app: INestApplication;
   let representativeToken: string;
   let otherUserToken: string;
+  let memberToken: string;
 
   const publicTest = (query: string) =>
     request(app.getHttpServer()).post('/graphql').send({ query });
@@ -43,6 +44,11 @@ describe('TeamModule (e2e)', () => {
     request(app.getHttpServer())
       .post('/graphql')
       .set('x-jwt', otherUserToken)
+      .send({ query });
+  const memberPrivateTest = (query: string) =>
+    request(app.getHttpServer())
+      .post('/graphql')
+      .set('x-jwt', memberToken)
       .send({ query });
 
   beforeAll(async () => {
@@ -153,6 +159,32 @@ describe('TeamModule (e2e)', () => {
           otherUserToken = token;
         });
     });
+
+    it('login member & save token', () => {
+      return publicTest(`
+              mutation {
+                  login(input: {
+                  username: "${member.username}"
+                  password: "${member.password}"
+                  }) {
+                  ok
+                  error
+                  token
+                  }
+              }
+          `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                login: { token },
+              },
+            },
+          } = res;
+          memberToken = token;
+        });
+    });
   });
 
   describe('createTeam', () => {
@@ -233,11 +265,11 @@ describe('TeamModule (e2e)', () => {
   });
 
   describe('registerMember', () => {
-    it('Error: User not found', () => {
-      return privateTest(`
+    it('Error: Team not found', () => {
+      return memberPrivateTest(`
       mutation {
           registerMember(input: {
-            memberId: 999
+            teamId: 999
           }) {
             ok
             error
@@ -254,16 +286,16 @@ describe('TeamModule (e2e)', () => {
             },
           } = res;
           expect(ok).toEqual(false);
-          expect(error).toEqual('User not found');
+          expect(error).toEqual('Team not found');
         });
     });
 
     // team 1 = {userId 1, userId 3}
     it('Register member', () => {
-      return privateTest(`
+      return memberPrivateTest(`
         mutation {
             registerMember(input: {
-              memberId: 3
+              teamId: 1
             }) {
               ok
               error
@@ -281,31 +313,6 @@ describe('TeamModule (e2e)', () => {
           } = res;
           expect(ok).toEqual(true);
           expect(error).toEqual(null);
-        });
-    });
-
-    it('Error: Already has team', () => {
-      return otherPrivateTest(`
-      mutation {
-          registerMember(input: {
-            memberId: 3
-          }) {
-            ok
-            error
-          }
-        }
-      `)
-        .expect(200)
-        .expect((res) => {
-          const {
-            body: {
-              data: {
-                registerMember: { ok, error },
-              },
-            },
-          } = res;
-          expect(ok).toEqual(false);
-          expect(error).toEqual('Already has team');
         });
     });
   });

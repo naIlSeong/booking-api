@@ -1,6 +1,6 @@
 import { Test } from '@nestjs/testing';
 import { getRepositoryToken } from '@nestjs/typeorm';
-import { User } from 'src/user/entity/user.entity';
+import { User, UserRole } from 'src/user/entity/user.entity';
 import { Repository } from 'typeorm';
 import { Team } from './entity/team.entity';
 import { TeamService } from './team.service';
@@ -96,15 +96,10 @@ describe('TeamService', () => {
 
   describe('registerMember', () => {
     const registerMemberArgs = {
-      memberId: 2,
+      teamId: 2,
     };
 
     it('should fail if member not found', async () => {
-      userRepo.findOne.mockResolvedValueOnce({
-        id: userId,
-        teamId: 1,
-      });
-      teamRepo.findOne.mockResolvedValueOnce({ id: 1 });
       userRepo.findOne.mockResolvedValue(null);
 
       const result = await service.registerMember(registerMemberArgs, userId);
@@ -119,14 +114,6 @@ describe('TeamService', () => {
         id: userId,
         teamId: 1,
       });
-      teamRepo.findOne.mockResolvedValueOnce({
-        id: 1,
-        members: [{ id: userId, teamId: 1 }],
-      });
-      userRepo.findOne.mockResolvedValue({
-        id: registerMemberArgs.memberId,
-        teamId: 2,
-      });
 
       const result = await service.registerMember(registerMemberArgs, userId);
       expect(result).toEqual({
@@ -135,28 +122,35 @@ describe('TeamService', () => {
       });
     });
 
+    it('should fail if team not found', async () => {
+      userRepo.findOne.mockResolvedValueOnce({
+        id: userId,
+      });
+      teamRepo.findOne.mockResolvedValue(null);
+
+      const result = await service.registerMember(registerMemberArgs, userId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Team not found',
+      });
+    });
+
     it('should register a member', async () => {
       userRepo.findOne.mockResolvedValueOnce({
         id: userId,
-        teamId: 1,
       });
       teamRepo.findOne.mockResolvedValueOnce({
-        id: 1,
-        members: [{ id: userId, teamId: 1 }],
-      });
-      userRepo.findOne.mockResolvedValue({
-        id: registerMemberArgs.memberId,
+        id: registerMemberArgs.teamId,
+        members: [],
       });
       teamRepo.save.mockReturnValue({
-        id: 1,
-        members: [
-          { id: userId, teamId: 1 },
-          { id: registerMemberArgs.memberId, temaId: 1 },
-        ],
+        id: registerMemberArgs.teamId,
+        members: [{ id: userId, team: { id: registerMemberArgs.teamId } }],
       });
       userRepo.save.mockReturnValue({
-        id: registerMemberArgs.memberId,
-        teamId: 1,
+        id: userId,
+        role: UserRole.Member,
+        team: { id: registerMemberArgs.teamId },
       });
 
       const result = await service.registerMember(registerMemberArgs, userId);
