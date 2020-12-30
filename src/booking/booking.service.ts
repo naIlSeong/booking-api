@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CoreOutput } from 'src/common/dto/common.dto';
 import { Place } from 'src/place/entity/place.entity';
@@ -597,7 +597,6 @@ export class BookingService {
         ok: true,
       };
     } catch (error) {
-      console.log(error);
       return {
         ok: false,
         error: 'Unexpected Error',

@@ -343,9 +343,6 @@ describe('UserModule (e2e)', () => {
         });
     });
 
-    it.todo('Error: Same Team');
-    it.todo('Error: Team not found');
-
     // Todo: Change Team
     it('Update username, password, studentId', () => {
       return privateTest(`

@@ -142,7 +142,7 @@ export class UserService {
   }
 
   async editUser(
-    { username, password, studentId, teamId }: EditUserInput,
+    { username, password, studentId }: EditUserInput,
     userId: number,
   ): Promise<EditUserOutput> {
     try {
@@ -184,23 +184,6 @@ export class UserService {
           };
         }
         user.studentId = studentId;
-      }
-
-      if (teamId) {
-        if (user.teamId === teamId) {
-          return {
-            ok: false,
-            error: 'Same Team',
-          };
-        }
-        const team = await this.teamRepo.findOne({ id: teamId });
-        if (!team) {
-          return {
-            ok: false,
-            error: 'Team not found',
-          };
-        }
-        user.team = team;
       }
 
       await this.userRepo.save(user);
