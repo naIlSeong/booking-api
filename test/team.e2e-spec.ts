@@ -473,6 +473,58 @@ describe('TeamModule (e2e)', () => {
     });
   });
 
+  describe('leaveTeam', () => {
+    it('Leave Team ID : 1', () => {
+      return memberPrivateTest(`
+          mutation {
+            leaveTeam {
+              ok
+              error
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                leaveTeam: { ok, error },
+              },
+            },
+          } = res;
+          expect(ok).toEqual(true);
+          expect(error).toEqual(null);
+        });
+    });
+
+    it('my data', () => {
+      return memberPrivateTest(`
+          query {
+            me {
+              username
+              id
+              role
+              team {
+                id
+              }
+            }
+          }
+       `)
+        .expect(200)
+        .expect((res) => {
+          const {
+            body: {
+              data: {
+                me: { role, team },
+              },
+            },
+          } = res;
+          expect(role).toEqual(UserRole.Individual);
+          expect(team).toEqual(null);
+        });
+    });
+  });
+
   describe('deleteTeam', () => {
     it('Delete team by representative', () => {
       return privateTest(`
