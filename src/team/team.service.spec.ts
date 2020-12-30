@@ -416,4 +416,52 @@ describe('TeamService', () => {
       });
     });
   });
+
+  describe('leaveTeam', () => {
+    const leaveTeamArgs = {
+      teamId: 77,
+    };
+
+    it('Leave team', async () => {
+      userRepo.findOne.mockResolvedValueOnce({
+        id: userId,
+        role: UserRole.Member,
+        team: {
+          id: leaveTeamArgs.teamId,
+        },
+      });
+
+      teamRepo.findOne.mockResolvedValueOnce({
+        id: leaveTeamArgs.teamId,
+        members: [
+          { id: userId, role: UserRole.Member },
+          { id: 99, role: UserRole.Representative },
+        ],
+      });
+
+      const result = await service.leaveTeam(userId);
+      expect(result).toEqual({
+        ok: true,
+      });
+      expect(teamRepo.save).toBeCalledWith({
+        id: leaveTeamArgs.teamId,
+        members: [{ id: 99, role: UserRole.Representative }],
+      });
+      expect(userRepo.save).toBeCalledWith({
+        id: userId,
+        team: null,
+        role: UserRole.Individual,
+      });
+    });
+
+    it('Error: Unexpected Error', async () => {
+      userRepo.findOne.mockRejectedValue(new Error());
+
+      const result = await service.leaveTeam(userId);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Unexpected Error',
+      });
+    });
+  });
 });
