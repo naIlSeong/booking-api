@@ -321,7 +321,6 @@ export class PlaceService {
     }
   }
 
-  // ToDo : Defensive Programming
   async getAvailablePlace({
     locationId,
   }: GetAvailablePlaceInput): Promise<GetAvailablePlaceOutput> {
@@ -330,6 +329,12 @@ export class PlaceService {
         placeLocation: { id: locationId },
         isAvailable: true,
       });
+      if (!places) {
+        return {
+          ok: false,
+          error: 'Place not found',
+        };
+      }
       if (places.length === 0) {
         return {
           ok: false,

@@ -64,3 +64,9 @@ Sports facility reservation service
 
 - [x] Booking.creatorId => Booking.creator
 - [ ] Edit Location
+
+---
+
+- [ ] editBooking => With Team chang!!
+- [ ] createBooking => withTeam Error
+- [x] getAvailablePlace => if(!place) Error handling

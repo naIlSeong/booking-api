@@ -489,6 +489,16 @@ describe('PlaceService', () => {
       locationId: 1,
     };
 
+    it('Error: Place not found', async () => {
+      placeRepo.find.mockResolvedValue(null);
+
+      const result = await service.getAvailablePlace(getAvailablePlaceArgs);
+      expect(result).toEqual({
+        ok: false,
+        error: 'Place not found',
+      });
+    });
+
     it('Error: Available place not found', async () => {
       placeRepo.find.mockResolvedValue([]);
 
