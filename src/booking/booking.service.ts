@@ -220,10 +220,16 @@ export class BookingService {
         if (!creator.teamId || creator.role === UserRole.Individual) {
           return {
             ok: false,
-            error: 'Team not found',
+            error: "You don't have team",
           };
         }
         const team = await this.teamRepo.findOne({ id: creator.teamId });
+        if (!team) {
+          return {
+            ok: false,
+            error: 'Team not found',
+          };
+        }
         booking.team = team;
       }
       await this.bookingRepo.save(booking);
@@ -509,13 +515,20 @@ export class BookingService {
       });
 
       if (withTeam && withTeam === true) {
-        if (!creator.teamId) {
+        if (!creator.teamId || creator.role === UserRole.Individual) {
+          return {
+            ok: false,
+            error: "You don't have team",
+          };
+        }
+        const team = await this.teamRepo.findOne({ id: creator.teamId });
+        if (!team) {
           return {
             ok: false,
             error: 'Team not found',
           };
         }
-        booking.team = await this.teamRepo.findOne({ id: creator.teamId });
+        booking.team = team;
       }
       await this.placeRepo.save({ ...place, inUse: true });
       await this.bookingRepo.save(booking);

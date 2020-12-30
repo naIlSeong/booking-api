@@ -373,7 +373,7 @@ describe('BookingModule (e2e)', () => {
         });
     });
 
-    it('Error: Team not found', () => {
+    it("Error: You don't have team", () => {
       return privateTest(`
         mutation {
             createBooking(input: {
@@ -397,7 +397,7 @@ describe('BookingModule (e2e)', () => {
             },
           } = res;
           expect(ok).toEqual(false);
-          expect(error).toEqual('Team not found');
+          expect(error).toEqual("You don't have team");
         });
     });
 
@@ -613,7 +613,7 @@ describe('BookingModule (e2e)', () => {
         });
     });
 
-    it('Error: Team not found', () => {
+    it("Error: You don't have team", () => {
       return otherPrivateTest(`
           mutation {
             createInUse(input: {
@@ -635,7 +635,7 @@ describe('BookingModule (e2e)', () => {
             },
           } = res;
           expect(ok).toEqual(false);
-          expect(error).toEqual('Team not found');
+          expect(error).toEqual("You don't have team");
         });
     });
 
