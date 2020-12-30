@@ -29,15 +29,12 @@ export class TeamResolver {
   }
 
   @Mutation((returns) => RegisterMemberOutput)
-  @Role(['Representative'])
+  @Role(['Individual'])
   registerMember(
     @Args('input') registerMemberInput: RegisterMemberInput,
-    @AuthUser() representative: User,
+    @AuthUser() individual: User,
   ): Promise<RegisterMemberOutput> {
-    return this.teamService.registerMember(
-      registerMemberInput,
-      representative.id,
-    );
+    return this.teamService.registerMember(registerMemberInput, individual.id);
   }
 
   @Mutation((returns) => EditTeamOutput)

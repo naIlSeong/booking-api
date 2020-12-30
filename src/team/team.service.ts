@@ -62,31 +62,30 @@ export class TeamService {
   }
 
   async registerMember(
-    { memberId }: RegisterMemberInput,
+    { teamId }: RegisterMemberInput,
     representativeId: number,
   ): Promise<RegisterMemberOutput> {
     try {
-      const user = await this.userRepo.findOne({ id: representativeId });
+      const individual = await this.userRepo.findOne({ id: representativeId });
       const team = await this.teamRepo.findOne({
-        where: { id: user.teamId },
+        where: { id: teamId },
         relations: ['members'],
       });
-      const member = await this.userRepo.findOne({ id: memberId });
-      if (!member) {
+      if (!individual) {
         return {
           ok: false,
           error: 'User not found',
         };
       }
-      if (member.teamId && member.role !== UserRole.Individual) {
+      if (individual.teamId) {
         return {
           ok: false,
           error: 'Already has team',
         };
       }
-      team.members.push(member);
+      team.members.push(individual);
       await this.teamRepo.save(team);
-      await this.userRepo.save({ ...member, team, role: UserRole.Member });
+      await this.userRepo.save({ ...individual, team, role: UserRole.Member });
 
       return {
         ok: true,

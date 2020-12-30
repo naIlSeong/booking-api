@@ -4,7 +4,7 @@ import { CoreOutput } from 'src/common/dto/common.dto';
 @InputType()
 export class RegisterMemberInput {
   @Field((type) => Int)
-  memberId: number;
+  teamId: number;
 }
 
 @ObjectType()
