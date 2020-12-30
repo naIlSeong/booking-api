@@ -126,7 +126,7 @@ describe('BookingService', () => {
     it("Error: You don't have team", async () => {
       userRepo.findOne.mockResolvedValueOnce({
         id: mockCreator.id,
-        teamId: mockCreator.teamId,
+        team: { id: mockCreator.teamId },
         role: UserRole.Individual,
       });
 
@@ -147,45 +147,10 @@ describe('BookingService', () => {
       });
     });
 
-    it('Error: Team not found', async () => {
-      userRepo.findOne.mockResolvedValueOnce({
-        id: mockCreator.id,
-        teamId: mockCreator.teamId,
-        role: mockCreator.role,
-      });
-
-      placeRepo.findOne.mockResolvedValueOnce({
-        id: createBookingArgs.placeId,
-        isAvailable: true,
-      });
-
-      bookingRepo.find.mockResolvedValueOnce([]);
-      bookingRepo.find.mockResolvedValueOnce([{ id: 2 }]);
-      bookingRepo.find.mockResolvedValueOnce([{ id: 1 }]);
-
-      bookingRepo.create.mockReturnValue({
-        creator: mockCreator,
-        place: { id: createBookingArgs.placeId },
-        startAt: createBookingArgs.startAt,
-        endAt: createBookingArgs.endAt,
-      });
-
-      teamRepo.findOne.mockResolvedValue(null);
-
-      const result = await service.createBooking(
-        createBookingArgs,
-        mockCreator.id,
-      );
-      expect(result).toEqual({
-        ok: false,
-        error: 'Team not found',
-      });
-    });
-
     it('Create new booking', async () => {
       userRepo.findOne.mockResolvedValueOnce({
         id: mockCreator.id,
-        teamId: mockCreator.teamId,
+        team: { id: mockCreator.teamId },
         role: mockCreator.role,
       });
 
@@ -204,8 +169,6 @@ describe('BookingService', () => {
         startAt: createBookingArgs.startAt,
         endAt: createBookingArgs.endAt,
       });
-
-      teamRepo.findOne.mockResolvedValue({ id: mockCreator.teamId });
 
       const result = await service.createBooking(
         createBookingArgs,
@@ -434,6 +397,7 @@ describe('BookingService', () => {
       bookingId: 2,
       startAt: new Date('2020-12-25T14:00'),
       endAt: new Date('2020-12-25T16:00'),
+      withTeam: false,
     };
 
     const otherEditBookingArgs = {
@@ -530,11 +494,51 @@ describe('BookingService', () => {
       });
     });
 
-    it('Success to edit booking', async () => {
+    it("Error: You don't have team", async () => {
       bookingRepo.findOne.mockResolvedValueOnce({
         id: editBookingArgs.bookingId,
         creatorId: mockCreator.id,
         inUse: false,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: editBookingArgs.placeId,
+        isAvailable: true,
+      });
+
+      bookingRepo.find.mockResolvedValueOnce([]);
+      bookingRepo.find.mockResolvedValueOnce([
+        { id: editBookingArgs.bookingId },
+      ]);
+      bookingRepo.find.mockResolvedValueOnce([
+        { id: editBookingArgs.bookingId },
+        { id: 999 },
+        { id: 777 },
+      ]);
+      userRepo.findOne.mockResolvedValueOnce({
+        id: mockCreator.id,
+        team: null,
+      });
+
+      const result = await service.editBooking(
+        {
+          placeId: editBookingArgs.placeId,
+          bookingId: editBookingArgs.bookingId,
+          withTeam: true,
+        },
+        mockCreator.id,
+      );
+      expect(result).toEqual({
+        ok: false,
+        error: "You don't have team",
+      });
+    });
+
+    it('Success to edit booking without Team', async () => {
+      bookingRepo.findOne.mockResolvedValueOnce({
+        id: editBookingArgs.bookingId,
+        creatorId: mockCreator.id,
+        inUse: false,
+        team: { id: 76 },
       });
       placeRepo.findOne.mockResolvedValueOnce({
         id: editBookingArgs.placeId,
@@ -555,6 +559,46 @@ describe('BookingService', () => {
         {
           placeId: editBookingArgs.placeId,
           bookingId: editBookingArgs.bookingId,
+          withTeam: editBookingArgs.withTeam,
+        },
+        mockCreator.id,
+      );
+      expect(result).toEqual({
+        ok: true,
+      });
+    });
+
+    it('Success to edit booking with Team', async () => {
+      bookingRepo.findOne.mockResolvedValueOnce({
+        id: editBookingArgs.bookingId,
+        creatorId: mockCreator.id,
+        inUse: false,
+        team: null,
+      });
+      placeRepo.findOne.mockResolvedValueOnce({
+        id: editBookingArgs.placeId,
+        isAvailable: true,
+      });
+
+      bookingRepo.find.mockResolvedValueOnce([]);
+      bookingRepo.find.mockResolvedValueOnce([
+        { id: editBookingArgs.bookingId },
+      ]);
+      bookingRepo.find.mockResolvedValueOnce([
+        { id: editBookingArgs.bookingId },
+        { id: 999 },
+        { id: 777 },
+      ]);
+      userRepo.findOne.mockResolvedValueOnce({
+        id: mockCreator.id,
+        team: { id: 76 },
+      });
+
+      const result = await service.editBooking(
+        {
+          placeId: editBookingArgs.placeId,
+          bookingId: editBookingArgs.bookingId,
+          withTeam: true,
         },
         mockCreator.id,
       );
@@ -625,7 +669,7 @@ describe('BookingService', () => {
     it("Error: You don't have team", async () => {
       userRepo.findOne.mockResolvedValueOnce({
         id: mockCreator.id,
-        teamId: null,
+        team: null,
         role: UserRole.Individual,
       });
       placeRepo.findOne.mockResolvedValueOnce({
@@ -648,37 +692,10 @@ describe('BookingService', () => {
       });
     });
 
-    it('Error: Team not found', async () => {
-      userRepo.findOne.mockResolvedValueOnce({
-        id: mockCreator.id,
-        teamId: 1,
-        role: UserRole.Member,
-      });
-      placeRepo.findOne.mockResolvedValueOnce({
-        id: createInUseArgs.placeId,
-        isAvailable: true,
-      });
-
-      bookingRepo.find.mockResolvedValueOnce([]);
-      bookingRepo.find.mockResolvedValueOnce([{ id: 999 }]);
-      bookingRepo.find.mockResolvedValueOnce([{ id: 888 }]);
-
-      bookingRepo.create.mockReturnValue({
-        id: 1,
-      });
-      teamRepo.findOne.mockResolvedValueOnce(null);
-
-      const result = await service.createInUse(createInUseArgs, mockCreator.id);
-      expect(result).toEqual({
-        ok: false,
-        error: 'Team not found',
-      });
-    });
-
     it('Success to create inUse', async () => {
       userRepo.findOne.mockResolvedValueOnce({
         id: mockCreator.id,
-        teamId: 1,
+        team: { id: 1 },
         role: UserRole.Member,
       });
       placeRepo.findOne.mockResolvedValueOnce({

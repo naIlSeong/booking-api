@@ -215,22 +215,14 @@ export class BookingService {
         endAt,
       });
 
-      // ToDo : Add Error if !teamId
       if (withTeam && withTeam === true) {
-        if (!creator.teamId || creator.role === UserRole.Individual) {
+        if (!creator.team || creator.role === UserRole.Individual) {
           return {
             ok: false,
             error: "You don't have team",
           };
         }
-        const team = await this.teamRepo.findOne({ id: creator.teamId });
-        if (!team) {
-          return {
-            ok: false,
-            error: 'Team not found',
-          };
-        }
-        booking.team = team;
+        booking.team = creator.team;
       }
       await this.bookingRepo.save(booking);
       return {
@@ -409,9 +401,8 @@ export class BookingService {
     }
   }
 
-  // ToDo : withTeam Change
   async editBooking(
-    { startAt, endAt, bookingId, placeId }: EditBookingInput,
+    { startAt, endAt, bookingId, placeId, withTeam }: EditBookingInput,
     creatorId: number,
   ): Promise<EditBookingOutput> {
     try {
@@ -419,7 +410,7 @@ export class BookingService {
         where: {
           id: bookingId,
         },
-        relations: ['place'],
+        relations: ['place', 'team'],
       });
       let error: string;
       error = this.isCreatorsBooking(booking, creatorId, false);
@@ -464,6 +455,19 @@ export class BookingService {
           ok: false,
           error,
         };
+      }
+      if (withTeam === true) {
+        const creator = await this.userRepo.findOne({ id: creatorId });
+        if (!creator.team) {
+          return {
+            ok: false,
+            error: "You don't have team",
+          };
+        }
+        booking.team = creator.team;
+      }
+      if (withTeam === false) {
+        booking.team = null;
       }
       await this.bookingRepo.save({ ...booking, startAt, endAt });
       return {
@@ -515,20 +519,13 @@ export class BookingService {
       });
 
       if (withTeam && withTeam === true) {
-        if (!creator.teamId || creator.role === UserRole.Individual) {
+        if (!creator.team || creator.role === UserRole.Individual) {
           return {
             ok: false,
             error: "You don't have team",
           };
         }
-        const team = await this.teamRepo.findOne({ id: creator.teamId });
-        if (!team) {
-          return {
-            ok: false,
-            error: 'Team not found',
-          };
-        }
-        booking.team = team;
+        booking.team = creator.team;
       }
       await this.placeRepo.save({ ...place, inUse: true });
       await this.bookingRepo.save(booking);

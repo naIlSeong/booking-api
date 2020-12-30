@@ -18,6 +18,9 @@ export class EditBookingInput extends PartialType(
 
   @Field((type) => Int, { nullable: true })
   placeId?: number;
+
+  @Field((type) => Boolean)
+  withTeam: boolean;
 }
 
 @ObjectType()

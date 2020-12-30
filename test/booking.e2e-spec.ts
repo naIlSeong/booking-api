@@ -994,7 +994,6 @@ describe('BookingModule (e2e)', () => {
   });
 
   describe('editBooking', () => {
-    // Defence
     it('Error: Booking not found', () => {
       return privateTest(`
           mutation {
@@ -1003,6 +1002,7 @@ describe('BookingModule (e2e)', () => {
               bookingId: 999
               startAt: "${newBooking.startAt}"
               endAt: "${newBooking.endAt}"
+              withTeam: false
             }) {
               ok
               error
@@ -1031,6 +1031,7 @@ describe('BookingModule (e2e)', () => {
               bookingId: 1
               startAt: "${newBooking.startAt}"
               endAt: "${newBooking.endAt}"
+              withTeam: false
             }) {
               ok
               error
@@ -1073,6 +1074,7 @@ describe('BookingModule (e2e)', () => {
               bookingId: 3
               startAt: "${newBooking.startAt}"
               endAt: "${newBooking.endAt}"
+              withTeam: false
             }) {
               ok
               error
@@ -1102,6 +1104,7 @@ describe('BookingModule (e2e)', () => {
               bookingId: 1
               startAt: "${newBooking.startAt}"
               endAt: "${newBooking.endAt}"
+              withTeam: false
             }) {
               ok
               error
@@ -1130,6 +1133,7 @@ describe('BookingModule (e2e)', () => {
               bookingId: 1
               startAt: "${newBooking.startAt}"
               endAt: "${newBooking.endAt}"
+              withTeam: false
             }) {
               ok
               error
@@ -1201,6 +1205,7 @@ describe('BookingModule (e2e)', () => {
               bookingId: 1
               startAt: "2020-12-24T12:00"
               endAt: "2020-12-24T14:00"
+              withTeam: false
             }) {
               ok
               error
@@ -1229,6 +1234,7 @@ describe('BookingModule (e2e)', () => {
               bookingId: 1
               startAt: "${newBooking.startAt}"
               endAt: "${newBooking.endAt}"
+              withTeam: true
             }) {
               ok
               error
@@ -1249,70 +1255,6 @@ describe('BookingModule (e2e)', () => {
         });
     });
   });
-
-  // ToDo :
-  // describe('getMyBookings', () => {
-  //   it('Find bookings creator ID : 1', () => {
-  //     return privateTest(`
-  //         query {
-  //           getMyBookings {
-  //             ok
-  //             error
-  //             bookings {
-  //               id
-  //               startAt
-  //               endAt
-  //               isFinished
-  //             }
-  //           }
-  //         }
-  //       `)
-  //       .expect(200)
-  //       .expect((res) => {
-  //         const {
-  //           body: {
-  //             data: {
-  //               getMyBookings: { ok, error, bookings },
-  //             },
-  //           },
-  //         } = res;
-  //         expect(ok).toEqual(true);
-  //         expect(error).toEqual(null);
-  //         expect(bookings.length).toEqual(3);
-  //         expect(bookings[0].id).toEqual(2);
-  //         expect(bookings[0].isFinished).toEqual(true);
-  //       });
-  //   });
-
-  //   it('Find bookings creator ID : 2', () => {
-  //     return otherPrivateTest(`
-  //         query {
-  //           getMyBookings {
-  //             ok
-  //             error
-  //             bookings {
-  //               startAt
-  //               endAt
-  //               isFinished
-  //             }
-  //           }
-  //         }
-  //       `)
-  //       .expect(200)
-  //       .expect((res) => {
-  //         const {
-  //           body: {
-  //             data: {
-  //               getMyBookings: { ok, error, bookings },
-  //             },
-  //           },
-  //         } = res;
-  //         expect(ok).toEqual(true);
-  //         expect(error).toEqual(null);
-  //         expect(bookings.length).toEqual(1);
-  //       });
-  //   });
-  // });
 
   describe('deleteBooking', () => {
     it('Error: Booking not found', () => {
