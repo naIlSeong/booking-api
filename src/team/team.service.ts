@@ -6,6 +6,7 @@ import { CreateTeamInput, CreateTeamOutput } from './dto/create-team.dto';
 import { DeleteTeamOutput } from './dto/delete-team.dto';
 import { EditTeamInput, EditTeamOutput } from './dto/edit-team.dto';
 import { GetTeamsOutput } from './dto/get-teams.dto';
+import { LeaveTeamOutput } from './dto/leave-team.dto';
 import {
   RegisterMemberInput,
   RegisterMemberOutput,
@@ -222,6 +223,34 @@ export class TeamService {
       return {
         ok: true,
         teams,
+      };
+    } catch (error) {
+      return {
+        ok: false,
+        error: 'Unexpected Error',
+      };
+    }
+  }
+
+  async leaveTeam(memberId: number): Promise<LeaveTeamOutput> {
+    try {
+      const user = await this.userRepo.findOne({ id: memberId });
+      const team = await this.teamRepo.findOne({
+        where: {
+          id: user.team.id,
+        },
+        relations: ['members'],
+      });
+      const members = team.members.filter((member) => member.id !== user.id);
+
+      await this.teamRepo.save({ ...team, members });
+      await this.userRepo.save({
+        ...user,
+        team: null,
+        role: UserRole.Individual,
+      });
+      return {
+        ok: true,
       };
     } catch (error) {
       return {

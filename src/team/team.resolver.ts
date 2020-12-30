@@ -6,6 +6,7 @@ import { CreateTeamInput, CreateTeamOutput } from './dto/create-team.dto';
 import { DeleteTeamOutput } from './dto/delete-team.dto';
 import { EditTeamInput, EditTeamOutput } from './dto/edit-team.dto';
 import { GetTeamsOutput } from './dto/get-teams.dto';
+import { LeaveTeamOutput } from './dto/leave-team.dto';
 import {
   RegisterMemberInput,
   RegisterMemberOutput,
@@ -72,5 +73,11 @@ export class TeamResolver {
     @Args('input') searchTeamInput: SearchTeamInput,
   ): Promise<SearchTeamOutput> {
     return this.teamService.searchTeam(searchTeamInput);
+  }
+
+  @Mutation((returns) => LeaveTeamOutput)
+  @Role(['Member'])
+  leaveTeam(@AuthUser() member: User): Promise<LeaveTeamOutput> {
+    return this.teamService.leaveTeam(member.id);
   }
 }
