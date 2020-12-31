@@ -21,9 +21,9 @@ import { Team } from './team/entity/team.entity';
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test',
-      ignoreEnvVars: process.env.NODE_ENV === 'prod',
+      ignoreEnvVars: process.env.NODE_ENV === 'production',
       validationSchema: Joi.object({
-        NODE_ENV: Joi.string().valid('dev', 'test', 'prod'),
+        NODE_ENV: Joi.string().valid('dev', 'test', 'production').required(),
         DB_HOST: Joi.string().required(),
         DB_PORT: Joi.number().required(),
         DB_USERNAME: Joi.string().required(),
@@ -42,12 +42,14 @@ import { Team } from './team/entity/team.entity';
       database: process.env.DB_DATABASE,
       synchronize: true,
       logging:
-        process.env.NODE_ENV !== 'prod' && process.env.NODE_ENV !== 'test',
+        process.env.NODE_ENV !== 'production' &&
+        process.env.NODE_ENV !== 'test',
       entities: [User, Booking, Place, PlaceLocation, Team],
     }),
     GraphQLModule.forRoot({
       autoSchemaFile: true,
       context: ({ req }) => ({ token: req.headers['x-jwt'] }),
+      playground: process.env.NODE_ENV !== 'production',
     }),
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,
