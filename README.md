@@ -70,3 +70,5 @@ Sports facility reservation service
 - [x] editBooking => With Team chang!!
 - [x] createBooking & createInUse => withTeam Error
 - [x] getAvailablePlace => if(!place) Error handling
+
+config validationScheme ???
