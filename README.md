@@ -19,11 +19,11 @@ Sports facility reservation service
 
 ## General info
 
-CRUD Application made with [NestJS](https://nestjs.com/), [TypeScript](https://www.typescriptlang.org/), [GraphQL](https://graphql.org/) and [PostgreSQL](https://www.postgresql.org/)
+CRUD Application made with <a href="https://nestjs.com/" target="_blank">NestJS</a>, <a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a>, <a href="https://graphql.org/" target="_blank">GraphQL</a> and <a href="https://www.postgresq" target="_blank">PostgreSQL</a>
 
-**[http://booking-nailseong.com](http://booking-nailseong.com)**
+<a href="http://booking-nailseong.com" target="_blank">http://booking-nailseong.com</a>
 
-[![logged-in-home](./images/loggedInHome.png)](http://booking-nailseong.com)
+![logged-in-home](./images/loggedInHome.png)
 
 _<div align="center">Home page when logged in</div>_
 
@@ -37,29 +37,29 @@ Project is created with:
 
 **Backend**
 
-- [NestJS](https://nestjs.com/) v7.5.1
-- [TypeScript](https://www.typescriptlang.org/) v4.0.5
-- [GraphQL](https://graphql.org/) v15.4.0
-- [Jest](https://jestjs.io/) v26.6.3
-- [PostgreSQL](https://www.postgresql.org/) v13
-- [TypeORM](https://typeorm.io/#/) v0.2.29
+- <a href="https://nestjs.com/" target="_blank">NestJS</a> v7.5.1
+- <a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a> v4.0.5
+- <a href="https://graphql.org/" target="_blank">GraphQL</a> v15.4.0
+- <a href="https://jestjs.io/" target="_blank">Jest</a> v26.6.3
+- <a href="https://www.postgresq" target="_blank">PostgreSQL</a> v13
+- <a href="https://typeorm.io/#/" target="_blank">TypeORM</a> v0.2.29
 
   <br>
 
 **Frontend** - https://github.com/naIlSeong/booking-frontend
 
-- [React](https://ko.reactjs.org/) v17.0.1
-- [GraphQL](https://graphql.org/) v15.4.0
-- [TypeScript](https://www.typescriptlang.org/) v4.0.3
-- [Apollo Client](https://www.apollographql.com/docs/react/) v3.3.6
-- [Tailwind CSS](https://tailwindcss.com/) v2.0.2
+- <a href="https://ko.reactjs.org/" target="_blank">React</a> v17.0.1
+- <a href="https://graphql.org/" target="_blank">GraphQL</a> v15.4.0
+- <a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a> v4.0.5
+- <a href="https://www.apollographql.com/docs/react/" target="_blank">Apollo Client</a> v3.3.6
+- <a href="https://tailwindcss.com/" target="_blank">Tailwind CSS</a> v2.0.2
 
  <br>
 
 **Deploy**
 
-- [AWS EC2](https://aws.amazon.com/ko/ec2/?ec2-whats-new.sort-by=item.additionalFields.postDateTime&ec2-whats-new.sort-order=desc)
-- [Nginx](https://www.nginx.com/)
+- <a href="https://aws.amazon.com/ko/ec2/?ec2-whats-new.sort-by=item.additionalFields.postDateTime&ec2-whats-new.sort-order=desc" target="_blank">AWS EC2</a>
+- <a href="https://www.nginx.com/" target="_blank">Nginx</a>
 
   <br>
 
