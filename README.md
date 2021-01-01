@@ -19,10 +19,13 @@ Sports facility reservation service
 
 ## General info
 
-CRUD Application made with NestJS, TypeScript, GraphQL and PostgreSQL
+CRUD Application made with [NestJS](https://nestjs.com/), [TypeScript](https://www.typescriptlang.org/), [GraphQL](https://graphql.org/) and [PostgreSQL](https://www.postgresql.org/)
 
-[http://booking-nailseong.com](http://booking-nailseong.com)
+**[http://booking-nailseong.com](http://booking-nailseong.com)**
+
 [![logged-in-home](./images/loggedInHome.png)](http://booking-nailseong.com)
+
+_<div align="center">Home page when logged in</div>_
 
 ## <br>
 
@@ -43,9 +46,7 @@ Project is created with:
 
   <br>
 
-**Frontend**
-
-Frontend Github Repo - https://github.com/naIlSeong/booking-frontend
+**Frontend** - https://github.com/naIlSeong/booking-frontend
 
 - [React](https://ko.reactjs.org/) v17.0.1
 - [GraphQL](https://graphql.org/) v15.4.0
@@ -55,7 +56,7 @@ Frontend Github Repo - https://github.com/naIlSeong/booking-frontend
 
  <br>
 
-**Depoly**
+**Deploy**
 
 - [AWS EC2](https://aws.amazon.com/ko/ec2/?ec2-whats-new.sort-by=item.additionalFields.postDateTime&ec2-whats-new.sort-order=desc)
 - [Nginx](https://www.nginx.com/)
