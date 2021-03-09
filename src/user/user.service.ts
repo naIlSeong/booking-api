@@ -8,14 +8,12 @@ import { JwtService } from 'src/jwt/jwt.service';
 import { DeleteUserOutput } from './dto/delete-user.dto';
 import { EditUserInput, EditUserOutput } from './dto/edit-user.dto';
 import { GetUserInput, GetUserOutput } from './dto/get-user.dto';
-import { Team } from 'src/team/entity/team.entity';
 import { SearchUserInput, SearchUserOutput } from './dto/search-user.dto';
 
 @Injectable()
 export class UserService {
   constructor(
     @InjectRepository(User) private readonly userRepo: Repository<User>,
-    @InjectRepository(Team) private readonly teamRepo: Repository<Team>,
     private readonly jwtService: JwtService,
   ) {}
 

@@ -1,114 +1,207 @@
 # Booking 🛎
 
-Sports facility reservation service
+체육 시설 예약을 도와주는 서비스
 
 <br>
 
 ---
 
-## Table of contents
+## Table of Contents
 
-- [General info](#general-info)
-- [Technologies](#technologies)
-- [Installation](#installation)
-- [Tests](#tests)
-
-  <br>
+- [General Info](#general-Info)
+  - [Stack](#stack)
+  - [Preview](#preview)
+- [Schema](#schema)
+  - [User](#user)
+  - [Booking](#booking)
+  - [Place](#place)
+  - [Team](#team)
+- [Unit Test](#unit-test)
+  - [User Service](#user-service)
+  - [Booking Service](#booking-service)
+  - [Place Service](#place-service)
+  - [Team Service](#team-service)
+  - [Coverage](#coverage)
+- [API](#api)
+  - [Query](#query)
+  - [Mutation](#mutation)
 
 ---
 
 ## General info
 
-CRUD Application made with <a href="https://nestjs.com/" target="_blank">NestJS</a>, <a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a>, <a href="https://graphql.org/" target="_blank">GraphQL</a> and <a href="https://www.postgresq" target="_blank">PostgreSQL</a>
+### Stack
 
-<a href="http://booking-nailseong.com" target="_blank">http://booking-nailseong.com</a>
+<a href="https://nestjs.com/" target="_blank">NestJS</a>, <a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a>, <a href="https://graphql.org/" target="_blank">GraphQL</a> and <a href="https://www.postgresq" target="_blank">PostgreSQL</a>
 
-![logged-in-home](./images/loggedInHome.png)
+### Preview
 
-_<div align="center">Home page when logged in</div>_
+> 직접 확인해 볼 수 있습니다! &rarr; http://booking-nailseong.com/
+> Frontend &rarr; https://github.com/naIlSeong/booking-frontend
 
 ## <br>
 
 ---
 
-## Technologies
+## Schema
 
-Project is created with:
+### User
 
-**Backend**
+```User Schema
+type User {
+  id: Int!
 
-- <a href="https://nestjs.com/" target="_blank">NestJS</a> v7.5.1
-- <a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a> v4.0.5
-- <a href="https://graphql.org/" target="_blank">GraphQL</a> v15.4.0
-- <a href="https://jestjs.io/" target="_blank">Jest</a> v26.6.3
-- <a href="https://www.postgresq" target="_blank">PostgreSQL</a> v13
-- <a href="https://typeorm.io/#/" target="_blank">TypeORM</a> v0.2.29
+  createdAt: DateTime!
 
-  <br>
+  updatedAt: DateTime!
 
-**Frontend** - https://github.com/naIlSeong/booking-frontend
+  studentId: Int
 
-- <a href="https://ko.reactjs.org/" target="_blank">React</a> v17.0.1
-- <a href="https://graphql.org/" target="_blank">GraphQL</a> v15.4.0
-- <a href="https://www.typescriptlang.org/" target="_blank">TypeScript</a> v4.0.5
-- <a href="https://www.apollographql.com/docs/react/" target="_blank">Apollo Client</a> v3.3.6
-- <a href="https://tailwindcss.com/" target="_blank">Tailwind CSS</a> v2.0.2
+  studentEmail: String
 
- <br>
+  username: String!
 
-**Deploy**
+  usernameSlug: String!
 
-- <a href="https://aws.amazon.com/ko/ec2/?ec2-whats-new.sort-by=item.additionalFields.postDateTime&ec2-whats-new.sort-order=desc" target="_blank">AWS EC2</a>
-- <a href="https://www.nginx.com/" target="_blank">Nginx</a>
+  password: String!
 
-  <br>
+  role: UserRole!
+
+  // ManyToMany
+  bookings: [Booking!]
+
+  // OneToMany
+  CreatedBooking: [Booking!]
+
+  // ManyToOne
+  team: Team
+}
+
+enum UserRole {
+  Admin
+  Individual
+  Representative
+  Member
+}
+```
+
+### Booking
+
+```Booking Schema
+type Booking {
+  id: Int!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  // ManyToOne
+  place: Place!
+
+  // ManyToOne
+  team: Team
+
+  // ManyToOne
+  creator: User!
+
+  startAt: DateTime!
+
+  endAt: DateTime!
+
+  inUse: Boolean!
+
+  isFinished: Boolean!
+
+  canExtend: Boolean!
+}
+```
+
+### Place
+
+```Place Schema
+type Place {
+  id: Int!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  placeName: String!
+
+  placeNameSlug: String!
+
+  // ManyToOne
+  placeLocation: PlaceLocation!
+
+  // OneToMany
+  bookings: [Booking!]
+
+  inUse: Boolean!
+
+  isAvailable: Boolean!
+}
+```
+
+### Team
+
+```Team Schema
+type Team {
+  id: Int!
+
+  createdAt: DateTime!
+
+  updatedAt: DateTime!
+
+  teamName: String!
+
+  teamNameSlug: String!
+
+  // OneToMany
+  members: [User!]!
+
+  // OneToMany
+  bookings: [Booking!]
+}
+```
 
 ---
 
-## Installation
+## Unit Test
 
-To run this project, install it locally using npm:
+> `Jest`를 사용하였습니다.
 
-```
-// First clone this repo and install dependencies
-$ git clone https://github.com/naIlSeong/booking-api
-$ cd booking-api
-$ npm install
-$ npm run start:dev
-```
+### User Service
 
-```
-// Set environment variable
+<img src="./images/booking-user-service.png" />
 
-//.env.dev
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=postgres
-DB_PASSWORD=1234
-DB_DATABASE=booking
-SALT=10
-PRIVATE_KEY=yourPrivateKey
-```
+</br>
 
-<br>
+### Booking Service
+
+<img src="./images/booking-booking-service.png" />
+
+</br>
+
+### Place Service
+
+<img src="./images/booking-place-service.png" />
+
+</br>
+
+### Team Service
+
+<img src="./images/booking-team-service.png" />
+
+</br>
+
+### Coverage
+
+<img src="./images/booking-unit-test-coverage.png" />
 
 ---
 
-## Tests
+## API
 
-To run test this project:
+### Query
 
-```
-// Unit Test
-$ npm run test:cov
-```
-
-![unit-test](./images/unit.png)
-<br>
-
-```
-// End To End Test
-$ npm run test:e2e
-```
-
-![e2e-test](./images/e2e.png)
+### Mutation

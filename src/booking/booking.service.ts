@@ -138,12 +138,10 @@ export class BookingService {
         relations: ['place'],
       });
       nowInUse.forEach(async (booking) => {
-        if (booking.inUse === false) {
-          if (booking.isFinished === false) {
-            booking.inUse = true;
-            await this.placeRepo.save({ ...booking.place, inUse: true });
-            await this.bookingRepo.save(booking);
-          }
+        if (booking.inUse === false && booking.isFinished === false) {
+          booking.inUse = true;
+          await this.placeRepo.save({ ...booking.place, inUse: true });
+          await this.bookingRepo.save(booking);
         }
       });
 
