@@ -25,16 +25,14 @@ import { Team } from './team/entity/team.entity';
       ],
       ignoreEnvVars: process.env.NODE_ENV === 'production',
       validationSchema: Joi.object({
-        NODE_ENV: Joi.string()
-          .valid('development', 'test', 'production')
-          .required(),
-        DB_HOST: Joi.string().required(),
-        DB_PORT: Joi.number().required(),
-        DB_USERNAME: Joi.string().required(),
-        DB_PASSWORD: Joi.string().required(),
-        DB_DATABASE: Joi.string().required(),
-        SALT: Joi.number().required(),
-        PRIVATE_KEY: Joi.string().required(),
+        NODE_ENV: Joi.string().valid('development', 'test', 'production'),
+        DB_HOST: Joi.string(),
+        DB_PORT: Joi.number(),
+        DB_USERNAME: Joi.string(),
+        DB_PASSWORD: Joi.string(),
+        DB_DATABASE: Joi.string(),
+        SALT: Joi.number(),
+        PRIVATE_KEY: Joi.string(),
       }),
     }),
     TypeOrmModule.forRoot({
