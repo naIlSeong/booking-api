@@ -1,0 +1,35 @@
+import { CoreOutput } from 'src/common/dto/common.dto';
+import { Place } from 'src/place/entity/place.entity';
+import { Team } from 'src/team/entity/team.entity';
+import { User } from 'src/user/entity/user.entity';
+import { Repository } from 'typeorm';
+import { BookingDetailInput, BookingDetailOutput } from './dto/booking-detail.dto';
+import { CreateBookingInput, CreateBookingOutput } from './dto/create-booking.dto';
+import { CreateInUseInput, CreateInUseOutput } from './dto/create-in-use.dto';
+import { DeleteBookingInput, DeleteBookingOutput } from './dto/delete-booking.dto';
+import { EditBookingInput, EditBookingOutput } from './dto/edit-booking.dto';
+import { ExtendInUseInput, ExtendInUseOutput } from './dto/extend-in-use.dto';
+import { FinishInUseInput, FinishInUseOutput } from './dto/finish-in-use.dto';
+import { GetBookingInput, GetBookingOutput } from './dto/get-booking.dto';
+import { Booking } from './entity/booking.entity';
+export declare class BookingService {
+    private readonly bookingRepo;
+    private readonly userRepo;
+    private readonly placeRepo;
+    private readonly teamRepo;
+    constructor(bookingRepo: Repository<Booking>, userRepo: Repository<User>, placeRepo: Repository<Place>, teamRepo: Repository<Team>);
+    private isCreatableBooking;
+    private isAvailablePlace;
+    private isCreatorsBooking;
+    checkInUse(): Promise<void>;
+    createBooking({ startAt, endAt, placeId, withTeam }: CreateBookingInput, creatorId: number): Promise<CreateBookingOutput>;
+    bookingDetail({ bookingId, }: BookingDetailInput): Promise<BookingDetailOutput>;
+    private findConditionalBooking;
+    getBooking(creatorId: number, { placeId, isInProgress, isComingUp, isFinished }: GetBookingInput): Promise<GetBookingOutput>;
+    deleteBooking({ bookingId }: DeleteBookingInput, creatorId: number): Promise<DeleteBookingOutput>;
+    editBooking({ startAt, endAt, bookingId, placeId, withTeam }: EditBookingInput, creatorId: number): Promise<EditBookingOutput>;
+    createInUse({ placeId, withTeam }: CreateInUseInput, creatorId: number): Promise<CreateInUseOutput>;
+    extendInUse({ bookingId }: ExtendInUseInput, creatorId: number): Promise<ExtendInUseOutput>;
+    finishInUse({ bookingId }: FinishInUseInput, creatorId: number): Promise<FinishInUseOutput>;
+    editBookingForTest(bookingId: number): Promise<CoreOutput>;
+}

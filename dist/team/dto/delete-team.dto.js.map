@@ -1,0 +1,1 @@
+{"version":3,"file":"delete-team.dto.js","sourceRoot":"","sources":["../../../src/team/dto/delete-team.dto.ts"],"names":[],"mappings":";;;;;;;;;AAAA,6CAA6C;AAC7C,4DAAuD;AAGvD,IAAa,gBAAgB,GAA7B,MAAa,gBAAiB,SAAQ,uBAAU;CAAG,CAAA;AAAtC,gBAAgB;IAD5B,oBAAU,EAAE;GACA,gBAAgB,CAAsB;AAAtC,4CAAgB"}

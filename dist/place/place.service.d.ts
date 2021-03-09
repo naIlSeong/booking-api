@@ -1,0 +1,30 @@
+import { Repository } from 'typeorm';
+import { CreateLocationInput, CreateLocationOutput } from './dto/create-loaction.dto';
+import { CreatePlaceInput, CreatePlaceOutput } from './dto/create-place.dto';
+import { DeletePlaceInput, DeletePlaceOutput } from './dto/delete-place.dto';
+import { EditPlaceInput, EditPlaceOutput } from './dto/edit-place.dto';
+import { GetAvailablePlaceInput, GetAvailablePlaceOutput } from './dto/get-available-place.dto';
+import { GetLocationOutput } from './dto/get-location.dto';
+import { LocationDetailInput, LocationDetailOutput } from './dto/location-detail.dto';
+import { PlaceDetailInput, PlaceDetailOutput } from './dto/place-detail.dto';
+import { SearchPlaceInput, SearchPlaceOutput } from './dto/search-place.dto';
+import { ToggleIsAvialableInput, ToggleIsAvialableOutput } from './dto/toggle-IsAvailable.dto';
+import { PlaceLocation } from './entity/location.entity';
+import { Place } from './entity/place.entity';
+export declare class PlaceService {
+    private readonly placeRepo;
+    private readonly locationRepo;
+    constructor(placeRepo: Repository<Place>, locationRepo: Repository<PlaceLocation>);
+    private generateSlug;
+    private findPlaceAndLocation;
+    createPlace({ placeName, locationId, }: CreatePlaceInput): Promise<CreatePlaceOutput>;
+    toggleIsAvailable({ id: placeId, }: ToggleIsAvialableInput): Promise<ToggleIsAvialableOutput>;
+    editPlace({ placeName, inUse, placeId, locationId, }: EditPlaceInput): Promise<EditPlaceOutput>;
+    deletePlace({ placeId, locationId, }: DeletePlaceInput): Promise<DeletePlaceOutput>;
+    placeDetail({ placeId }: PlaceDetailInput): Promise<PlaceDetailOutput>;
+    createLocation({ locationName, }: CreateLocationInput): Promise<CreateLocationOutput>;
+    locationDetail({ locationId, }: LocationDetailInput): Promise<LocationDetailOutput>;
+    getLocation(): Promise<GetLocationOutput>;
+    getAvailablePlace({ locationId, }: GetAvailablePlaceInput): Promise<GetAvailablePlaceOutput>;
+    searchPlace({ query }: SearchPlaceInput): Promise<SearchPlaceOutput>;
+}
