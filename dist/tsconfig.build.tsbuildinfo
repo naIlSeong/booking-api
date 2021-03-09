@@ -6086,12 +6086,12 @@
         "affectsGlobalScope": false
       },
       "../src/app.module.ts": {
-        "version": "f385075f3fef37170c149e8738203aabeee22e11c600e56a8f85ec7dbcd1dfa8",
+        "version": "ec350036e6e924fa3c3785b6d868ccaaf81342927a813320a71ba13774d408ec",
         "signature": "b82491e2990291580288c5602d4c017238977749d52b17391f0e45d9a29be644",
         "affectsGlobalScope": false
       },
       "../src/main.ts": {
-        "version": "1b40202529c26f7903430a816e2fe94a33bdf17c42c8ed406ec4680110b602a6",
+        "version": "d35475e276eef36759f93d235aa46a1e12f6d50cc75a2243fe70cd95a24ac5ad",
         "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
         "affectsGlobalScope": false
       },

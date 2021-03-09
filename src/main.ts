@@ -5,8 +5,6 @@ import { AppModule } from './app.module';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.useGlobalPipes(new ValidationPipe());
-  await app.listen(4000, () => {
-    console.log('🔥 Running on: http://127.0.0.1:3333/graphql');
-  });
+  await app.listen(4000);
 }
 bootstrap();

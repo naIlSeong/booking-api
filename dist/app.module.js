@@ -31,7 +31,7 @@ AppModule = __decorate([
         imports: [
             config_1.ConfigModule.forRoot({
                 isGlobal: true,
-                envFilePath: process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test',
+                envFilePath: [process.env.NODE_ENV === 'dev' ? '.env.dev' : '.env.test'],
                 ignoreEnvVars: process.env.NODE_ENV === 'production',
                 validationSchema: Joi.object({
                     NODE_ENV: Joi.string().valid('dev', 'test', 'production').required(),
