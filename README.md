@@ -42,7 +42,7 @@
 
 - **회원가입 & 로그인**
 
-<img src="./images/signup_login.gif" />
+<img src="./images/22.gif" />
 
 </br>
 
