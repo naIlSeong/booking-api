@@ -48,13 +48,13 @@
 
 - **이용 시작**
 
-<img src="./images/create-inprogress.gif" />
+<img src="./images/inuse.gif" />
 
 </br>
 
 - **시설 예약**
 
-<img src="./images/create-coming-up.gif" />
+<img src="./images/comingup.gif" />
 
 </br>
 
@@ -66,25 +66,25 @@
 
 - **이용 종료**
 
-<img src="./images/finish-in-use.gif" />
+<img src="./images/finish.gif" />
 
 </br>
 
 - **팀 만들기**
 
-<img src="./images/create-team.gif" />
+<img src="./images/newteam.gif" />
 
 </br>
 
 - **팀 가입**
 
-<img src="./images/join-team.gif" />
+<img src="./images/join.gif" />
 
 </br>
 
 - **이용 연장**
 
-<img src="./images/extend.gif" />
+<img src="./images/extends.gif" />
 
 </br>
 
