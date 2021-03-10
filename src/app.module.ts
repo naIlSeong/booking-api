@@ -33,6 +33,9 @@ import { Team } from './team/entity/team.entity';
         DB_DATABASE: Joi.string(),
         SALT: Joi.number(),
         PRIVATE_KEY: Joi.string(),
+        SSL: Joi.bool(),
+        SSL_KEY_PATH: Joi.string(),
+        SSL_CERT_PATH: Joi.string(),
       }),
     }),
     TypeOrmModule.forRoot({
@@ -52,6 +55,10 @@ import { Team } from './team/entity/team.entity';
       autoSchemaFile: true,
       context: ({ req }) => ({ token: req.headers['x-jwt'] }),
       playground: process.env.NODE_ENV !== 'production',
+      cors: {
+        credentials: true,
+        origin: true,
+      },
     }),
     JwtModule.forRoot({
       privateKey: process.env.PRIVATE_KEY,

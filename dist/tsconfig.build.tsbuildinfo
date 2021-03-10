@@ -6091,12 +6091,12 @@
         "affectsGlobalScope": false
       },
       "../src/app.module.ts": {
-        "version": "e7c557b4176d8b40a4ef123c27809a9d14122716c671fc6113a7053886db22f0",
+        "version": "bee1c905be44477834d86bab415c4b4ddf526900e15f0e9e584a8c974335bb22",
         "signature": "b82491e2990291580288c5602d4c017238977749d52b17391f0e45d9a29be644",
         "affectsGlobalScope": false
       },
       "../src/main.ts": {
-        "version": "d35475e276eef36759f93d235aa46a1e12f6d50cc75a2243fe70cd95a24ac5ad",
+        "version": "e0f1dda61bc312423cc38e0eff48ec0016b32d131d8bbec92f527143bab44c66",
         "signature": "8e609bb71c20b858c77f0e9f90bb1319db8477b13f9f965f1a1e18524bf50881",
         "affectsGlobalScope": false
       },
@@ -11375,6 +11375,8 @@
       "../src/main.ts": [
         "../node_modules/@nestjs/common/index.d.ts",
         "../node_modules/@nestjs/core/index.d.ts",
+        "../node_modules/@types/node/fs.d.ts",
+        "../node_modules/@types/node/path.d.ts",
         "../src/app.module.ts"
       ],
       "../src/place/dto/create-loaction.dto.ts": [

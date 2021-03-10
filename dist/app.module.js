@@ -44,6 +44,9 @@ AppModule = __decorate([
                     DB_DATABASE: Joi.string(),
                     SALT: Joi.number(),
                     PRIVATE_KEY: Joi.string(),
+                    SSL: Joi.bool(),
+                    SSL_KEY_PATH: Joi.string(),
+                    SSL_CERT_PATH: Joi.string(),
                 }),
             }),
             typeorm_1.TypeOrmModule.forRoot({
@@ -62,6 +65,10 @@ AppModule = __decorate([
                 autoSchemaFile: true,
                 context: ({ req }) => ({ token: req.headers['x-jwt'] }),
                 playground: process.env.NODE_ENV !== 'production',
+                cors: {
+                    credentials: true,
+                    origin: true,
+                },
             }),
             jwt_module_1.JwtModule.forRoot({
                 privateKey: process.env.PRIVATE_KEY,
