@@ -1,6 +1,7 @@
 # Booking 🛎
 
 체육 시설 예약을 도와주는 서비스
+**https://booking-nailseong.com/**
 
 <br>
 
@@ -36,8 +37,56 @@
 
 ### Preview
 
-> 직접 확인해 볼 수 있습니다! &rarr; http://booking-nailseong.com/
-> Frontend &rarr; https://github.com/naIlSeong/booking-frontend
+> 직접 확인해 볼 수 있습니다! &rarr; **https://booking-nailseong.com/**
+> Frontend &rarr; **https://github.com/naIlSeong/booking-frontend**
+
+- **회원가입 & 로그인**
+
+<img src="./images/signup_login.gif" />
+
+</br>
+
+- **이용 시작**
+
+<img src="./images/create-inprogress.gif" />
+
+</br>
+
+- **시설 예약**
+
+<img src="./images/create-coming-up.gif" />
+
+</br>
+
+- **검색**
+
+<img src="./images/search.gif" />
+
+</br>
+
+- **이용 종료**
+
+<img src="./images/finish-in-use.gif" />
+
+</br>
+
+- **팀 만들기**
+
+<img src="./images/create-team.gif" />
+
+</br>
+
+- **팀 가입**
+
+<img src="./images/join-team.gif" />
+
+</br>
+
+- **이용 연장**
+
+<img src="./images/extend.gif" />
+
+</br>
 
 ## <br>
 
