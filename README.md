@@ -246,11 +246,3 @@ type Team {
 ### Coverage
 
 <img src="./images/booking-unit-test-coverage.png" />
-
----
-
-## API
-
-### Query
-
-### Mutation
